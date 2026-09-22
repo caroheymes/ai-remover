@@ -1,0 +1,6 @@
+# Dépendances de production
+-r requirements.txt
+
+# Dépendances de développement et test
+pytest>=8.0.0
+ruff>=0.8.0

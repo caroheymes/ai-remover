@@ -1,0 +1,57 @@
+# Fichiers et dossiers personnels / données sensibles
+perso/
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Caches et bytecode Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Caches d'outils et de tests (Pytest, Ruff, Mypy, Coverage)
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Environnements virtuels
+.venv/
+venv/
+ENV/
+env/
+
+# Fichiers d'environnement IDE et éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Fichiers système d'exploitation
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs et fichiers temporaires
+*.log
+*.tmp
