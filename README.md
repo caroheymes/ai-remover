@@ -1,12 +1,16 @@
-# AI-remover: Studio d'Humanisation Éditoriale
+# AI-remover: Supprime les traces d'IA dans vos textes, docs & images + tracking des modifs
 
-[![CI Pipeline](https://github.com/votre-compte/AI-remover/actions/workflows/ci.yml/badge.svg)](https://github.com/votre-compte/AI-remover/actions/workflows/ci.yml)
-[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
-[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Tests: Pytest](https://img.shields.io/badge/tests-46%20passed-success)](https://docs.pytest.org/)
+[![CI Pipeline](https://img.shields.io/badge/CI-passing-brightgreen?logo=githubactions&logoColor=white)](https://github.com/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io)
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![Tests: Pytest](https://img.shields.io/badge/tests-46%20passed-success?logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Mobile Responsive](https://img.shields.io/badge/Mobile-responsive-blueviolet?logo=googlechrome&logoColor=white)](https://share.streamlit.io)
+[![Antigravity Engine](https://img.shields.io/badge/Engine-Antigravity%20CLI-orange?logo=google&logoColor=white)](https://github.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Caro Heymes](https://img.shields.io/badge/Recommand%C3%A9%20par-Caro%20Heymes%20%F0%9F%9A%80-7928CA.svg)](https://www.linkedin.com/in/caroline-heymes/)
 
-AI-remover s'exécute en local pour nettoyer les textes et corriger leurs métriques stylométriques. Le moteur supprime les signatures statistiques et typographiques générées par les modèles de langage, purge les caractères de traçage invisibles dans le flux Unicode et réécrit les documents selon le profil stylistique sélectionné.
+AI-remover s'exécute en local ou sur le cloud pour assainir les textes et corriger leurs métriques stylométriques. Le moteur supprime les signatures statistiques et typographiques générées par les modèles de langage, purge les caractères de traçage invisibles dans le flux Unicode et réécrit les documents selon le profil stylistique sélectionné.
 
 ```text
 Entrée (Texte / Fichier / Média)
@@ -16,7 +20,7 @@ Entrée (Texte / Fichier / Média)
   ├── 3. Passerelle de réécriture (core/ai_bridge.py : CLI Antigravity locale ou API Gemini)
   ├── 4. Diagnostic stylométrique (core/score_stylometry.py : MATTR, burstiness, audit)
   ├── 5. Diff mot-à-mot et export PDF A4 exécutif (Playwright Chromium headless)
-  ├── 6. Suite de validation (tests/ : 44 tests unitaires automatisés)
+  ├── 6. Suite de validation (tests/ : 46 tests unitaires automatisés)
   └── 7. Export natif (.docx, .pdf, .txt, .md, images nettoyées)
 ```
 
