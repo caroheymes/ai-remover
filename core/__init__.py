@@ -1,4 +1,4 @@
-"""Core modules for HENRI - Antigravity Humanizer Studio."""
+"""Core modules for AI-Remover."""
 
 from __future__ import annotations
 

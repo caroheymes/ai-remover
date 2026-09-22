@@ -1,4 +1,4 @@
-"""Antigravity Humanizer Studio - Application Streamlit complète.
+"""AI-Remover - Application Streamlit complète.
 Dé-ia-isation de texte, nettoyage Unicode, stylométrie et profils de style métier.
 """
 
@@ -37,7 +37,7 @@ from core.text_unicode import clean_unicode, inspect_unicode
 # Configuration de la page Streamlit
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Humanizer Studio",
+    page_title="AI-Remover",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -214,7 +214,7 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 # En-tête principal
 # ---------------------------------------------------------------------------
-st.markdown('<div class="main-title">Humanizer Studio</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">AI-Remover</div>', unsafe_allow_html=True)
 st.markdown(
     "<div class=\"sub-title\">Suppression des tics d'écriture d'IA, nettoyage Unicode déterministe et calibration stylistique.</div>",
     unsafe_allow_html=True,
@@ -240,7 +240,11 @@ def get_or_create_diff_pdf(
 
 
 def render_editorial_and_stylometry_report(
-    input_text: str, output_text: str, current_profile: Any, unicode_stats: Any = None
+    input_text: str,
+    output_text: str,
+    current_profile: Any,
+    unicode_stats: Any = None,
+    key_prefix: str = "tab_text",
 ) -> None:
     """Affiche le rapport comparatif complet : diff mot-à-mot, métriques clés, tics d'IA détectés et journal d'audit."""
     if not input_text or not output_text:
@@ -387,6 +391,7 @@ def render_editorial_and_stylometry_report(
             mime="application/pdf",
             type="primary",
             use_container_width=True,
+            key=f"dl_diff_pdf_{key_prefix}",
         )
     else:
         html_report = generate_diff_report_html(
@@ -399,6 +404,7 @@ def render_editorial_and_stylometry_report(
             mime="text/html",
             type="primary",
             use_container_width=True,
+            key=f"dl_diff_html_{key_prefix}",
             help=f"Moteur PDF indisponible ({pdf_err}). Téléchargement de secours au format HTML interactif."
             if pdf_err
             else None,
@@ -495,6 +501,7 @@ with tab_text:
                 file_name="texte_humanise.txt",
                 mime="text/plain",
                 use_container_width=True,
+                key="dl_txt_tab_text",
             )
 
     if run_humanize:
@@ -539,6 +546,7 @@ with tab_text:
             output_text=output_text,
             current_profile=current_profile,
             unicode_stats=st.session_state.get("last_unicode_stats"),
+            key_prefix="tab_text",
         )
 
 
@@ -570,7 +578,9 @@ with tab_doc:
                 )
 
             with col_img2:
-                if st.button("Purger les métadonnées d'IA et EXIF"):
+                if st.button(
+                    "Purger les métadonnées d'IA et EXIF", key="btn_purge_img"
+                ):
                     ok, clean_img_buf, stats = strip_image_metadata(uploaded_file)
                     if ok:
                         st.success(
@@ -583,6 +593,7 @@ with tab_doc:
                             data=clean_img_buf,
                             file_name=clean_name,
                             mime=f"image/{stats['format'].lower()}",
+                            key=f"dl_clean_img_{filename}",
                         )
                     else:
                         st.error(f"Erreur : {stats.get('error')}")
@@ -601,7 +612,7 @@ with tab_doc:
                     height=150,
                 )
 
-                if st.button("Humaniser l'intégralité du document"):
+                if st.button("Humaniser l'intégralité du document", key="btn_run_doc"):
                     with st.spinner(
                         f"Traitement du document selon le profil {current_profile.name}..."
                     ):
@@ -639,6 +650,7 @@ with tab_doc:
                                         file_name=f"humanise_{filename}",
                                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                         use_container_width=True,
+                                        key=f"dl_docx_{filename}",
                                     )
                                 elif ext == ".pdf":
                                     pdf_buf = create_clean_pdf(clean_final)
@@ -648,6 +660,7 @@ with tab_doc:
                                         file_name=f"humanise_{filename}",
                                         mime="application/pdf",
                                         use_container_width=True,
+                                        key=f"dl_pdf_{filename}",
                                     )
                                 elif ext == ".md":
                                     st.download_button(
@@ -656,6 +669,7 @@ with tab_doc:
                                         file_name=f"humanise_{filename}",
                                         mime="text/markdown",
                                         use_container_width=True,
+                                        key=f"dl_md_{filename}",
                                     )
                                 else:
                                     st.download_button(
@@ -664,6 +678,7 @@ with tab_doc:
                                         file_name=f"humanise_{filename}",
                                         mime="text/plain",
                                         use_container_width=True,
+                                        key=f"dl_txt_{filename}",
                                     )
 
                             # Bilan comparatif du document
@@ -672,6 +687,7 @@ with tab_doc:
                                 output_text=clean_final,
                                 current_profile=current_profile,
                                 unicode_stats=doc_unicode_stats,
+                                key_prefix="tab_doc",
                             )
                         else:
                             st.error(ai_out)
@@ -750,3 +766,19 @@ with tab_guide:
         17. **Pas d'emojis décoratifs dans les titres ou le corps du texte**.
         18. **Suppression totale des résidus de conversation** (*« J'espère que cela aide », « Excellente question »*).
         """)
+
+# ---------------------------------------------------------------------------
+# Pied de page (Footer)
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.markdown(
+    """
+<div style="text-align: center; color: #64748B; font-size: 0.9rem; padding: 20px 0 30px 0;">
+    Fait avec amour et une bonne dose de rigolade par <strong>Caro Heymes</strong>, IA Architect &bull; 
+    <a href="https://www.linkedin.com/in/caroline-heymes/" target="_blank" style="color: #2563EB; text-decoration: underline; font-weight: 600;">
+        https://www.linkedin.com/in/caroline-heymes/
+    </a>
+</div>
+""",
+    unsafe_allow_html=True,
+)

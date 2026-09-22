@@ -1,4 +1,4 @@
-"""Profils stylistiques et générateur d'instructions pour Antigravity Humanizer Studio."""
+"""Profils stylistiques et générateur d'instructions pour AI-Remover."""
 
 from __future__ import annotations
 

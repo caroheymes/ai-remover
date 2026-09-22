@@ -1,8 +1,8 @@
 @echo off
-title Partage distant illimite - Antigravity Humanizer Studio
+title Partage distant illimite - AI-Remover
 echo ========================================================
 echo   Partage distant illimite (Cloudflare Tunnel)
-echo   Antigravity Humanizer Studio
+echo   AI-Remover
 echo ========================================================
 echo.
 echo Port par defaut : 8505

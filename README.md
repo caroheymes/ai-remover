@@ -1,12 +1,12 @@
-# Henri: Antigravity Humanizer Studio
+# AI-remover: Studio d'Humanisation Éditoriale
 
-[![CI Pipeline](https://github.com/votre-compte/henri/actions/workflows/ci.yml/badge.svg)](https://github.com/votre-compte/henri/actions/workflows/ci.yml)
+[![CI Pipeline](https://github.com/votre-compte/AI-remover/actions/workflows/ci.yml/badge.svg)](https://github.com/votre-compte/AI-remover/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Tests: Pytest](https://img.shields.io/badge/tests-44%20passed-success)](https://docs.pytest.org/)
+[![Tests: Pytest](https://img.shields.io/badge/tests-46%20passed-success)](https://docs.pytest.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Henri est une application locale d'assainissement textuel et stylométrique. Elle supprime les signatures statistiques et typographiques des modèles de langage, purge les caractères de traçage invisibles et réécrit les documents selon la posture stylistique de votre choix.
+AI-remover s'exécute en local pour nettoyer les textes et corriger leurs métriques stylométriques. Le moteur supprime les signatures statistiques et typographiques générées par les modèles de langage, purge les caractères de traçage invisibles dans le flux Unicode et réécrit les documents selon le profil stylistique sélectionné.
 
 ```text
 Entrée (Texte / Fichier / Média)
@@ -24,48 +24,49 @@ Entrée (Texte / Fichier / Média)
 
 ## Pourquoi ce projet existe
 
-Les modèles de langage contemporains produisent des écrits marqués par des récurrences mesurables :
+Les modèles de langage actuels injectent des régularités statistiques identifiables dans leurs flux textuels :
 
-- **Monotonie rythmique** : longueur de phrase quasi constante (faible burstiness) et constructions en trois temps systématiques.
-- **Formules préfabriquées** : faux contrastes (*non seulement... mais aussi...*), transitions théâtrales (*plongeons dans*, *il est essentiel de souligner*), superlatifs vagues et métaphores génériques.
-- **Marqueurs invisibles et traçage** : injection de points de code Unicode de largeur nulle (`U+200B`, `U+FEFF`), d'espaces insécables de substitution (`U+00A0`, `U+202F`) et de métadonnées de provenance (C2PA, EXIF, XMP).
-- **Structure artificielle** : listes à puces avec titres en gras et deux-points, tirets cadratins fréquents et conclusions moralisatrices en une ligne.
+- **Monotonie rythmique** : Le rythme s'avère uniforme, marqué par une variance de longueur de phrase très faible (burstiness minimale) et des découpages systématiques en trois propositions.
+- **Formules préfabriquées** : Le texte accumule des structures prévisibles, notamment de faux contrastes (*non seulement... mais aussi...*), des accroches scénarisées (*plongeons dans*, *il est essentiel de souligner*), des superlatifs imprécis et des métaphores génériques.
+- **Marqueurs invisibles et traçage** : Le flux brut embarque des marqueurs invisibles et des traces techniques, en particulier des points de code Unicode de largeur nulle (`U+200B`, `U+FEFF`), des espaces insécables détournés (`U+00A0`, `U+202F`) et des métadonnées de traçabilité (C2PA, EXIF, XMP).
+- **Structure artificielle** : Le formatage impose des modèles artificiels, alternant listes à puces prévisibles, tirets cadratins redondants et moralisations conclusives isolées sur une ligne.
 
-Henri corrige ces artefacts à travers une chaîne de traitement documentée et sans perte d'information factuelle.
+
+AI-remover neutralise ces artefacts au travers d'un pipeline d'exécution documenté, sans dégrader ni altérer les données factuelles d'origine.
 
 ---
 
-## Comment le système fonctionne
+## Fonctionnement du système
 
-Le traitement repose sur trois étapes successives :
+Le pipeline de traitement s'exécute en trois étapes successives :
 
 ### 1. Assainissement déterministe (Layer A)
-Le module `core/text_unicode.py` inspecte et nettoie le texte sans faire appel à un modèle de langage :
-- Suppression des 50 points de code invisibles et de formatage stéganographique (BOM, séparateurs de variation mongols, caractères de contrôle LTR/RTL).
-- Remplacement des 15 variantes d'espaces exotiques par l'espace standard ASCII `0x20`.
-- Élimination intégrale des tirets cadratins (`—`) et demi-cadratins (`–`) au profit de points, virgules ou parenthèses.
+Le module `core/text_unicode.py` inspecte et nettoie le flux textuel sans solliciter de modèle de langage :
+- Suppression des 50 points de code invisibles et artefacts de formatage stéganographique (BOM, séparateurs de variation mongols, caractères de contrôle LTR/RTL).
+- Normalisation des 15 variantes d'espaces exotiques vers l'espace standard ASCII `0x20`.
+- Remplacement systématique des tirets cadratins et demi-cadratins par des points, des virgules ou des parenthèses.
 
 ### 2. Réécriture contextuelle par profil (Layer B)
-Le module `core/profiles.py` génère un prompt d'alignement stylistique et applique 25 règles strictes issues des standards éditoriaux humains :
+Le module `core/profiles.py` génère le prompt de calibrage stylistique et applique 25 règles strictes issues des standards éditoriaux :
 
 | Profil | Destination | Ligne directrice |
 | :--- | :--- | :--- |
-| **Avocat** | Mémos, contrats, consultations | Précision doctrinale, absence d'affirmation gratuite, modalisateurs pondérés. |
-| **Analyste** | Notes de synthèse, analyses | Causalités directes, mise en avant des chiffres et des compromis (*trade-offs*). |
-| **Architecte** | Spécifications techniques | Voix active, contraintes d'ingénierie réelles, élimination du jargon abstrait. |
-| **Chercheur** | Articles, rapports d'étude | Prudence méthodologique, distinction nette entre faits démontrés et hypothèses. |
-| **Communicant** | Publications réseaux sociaux | Accroche directe sans titre formel, format mobile aéré, 2 à 3 hashtags ciblés. |
-| **Ma propre voix** | Signature humaine personnalisée | Imitation de votre propre échantillon de texte (vocabulaire, syntaxe et rythme). |
+| **Avocat** | Mémos, contrats, consultations | Rigueur doctrinale, exclusion des affirmations non étayées, modalisateurs calibrés. |
+| **Analyste** | Notes de synthèse, analyses | Relations de cause à effet directes, priorisation des métriques chiffrées et arbitrage explicite des compromis (*trade-offs*). |
+| **Architecte** | Spécifications techniques | Voix active, prise en compte des contraintes réelles d'ingénierie, suppression du jargon abstrait. |
+| **Chercheur** | Articles, rapports d'étude | Rigueur méthodologique, séparation stricte entre données vérifiées et hypothèses. |
+| **Communicant** | Publications réseaux sociaux | Accroche directe sans titrage formel, mise en page aérée pour mobile, 2 à 3 hashtags ciblés. |
+| **Ma propre voix** | Signature personnalisée | Reproduction fidèle de l'échantillon fourni (vocabulaire, syntaxe et rythme). |
 
-L'exécution est assurée soit localement par le binaire Antigravity CLI (`agy -p`) avec découpage automatique anti-saturation, soit à distance par l'API REST Google Gemini via `core/ai_bridge.py`.
+Le runtime prend en charge deux modes d'exécution : en local via le binaire Antigravity CLI (`agy -p`) avec segmentation automatique du payload anti-saturation, ou à distance via l'API REST Google Gemini pilotée par `core/ai_bridge.py`.
 
 ### 3. Traçabilité, diff mot-à-mot et rapport PDF (Layer C)
-Le module `core/score_stylometry.py` calcule un score de densité synthétique (de 0,0 à 1,0), dresse un diff interactif et génère un rapport exécutif :
-- **Diff visuel mot-à-mot** : surlignage immédiat des suppressions (rouge barré) et des reformulations (vert).
-- **Rapport exécutif PDF A4** : document imprimable certifié avec cartes KPI, traçabilité des tics purgés et diff complet (Playwright Chromium headless).
-- **Taux de conservation factuelle** : calcul de la proportion des termes d'origine préservés.
-- **Diversité lexicale (MATTR)** : Type-Token Ratio sur fenêtres glissantes de 50 mots.
-- **Burstiness** : coefficient de variation de la longueur des phrases.
+Le module `core/score_stylometry.py` calcule un score de densité synthétique gradué de 0,0 à 1,0, produit un diff interactif et génère un rapport exécutif :
+- Diff visuel mot-à-mot identifiant les suppressions en rouge barré et les reformulations en vert.
+- Rapport exécutif au format PDF A4 généré via Playwright (Chromium headless), regroupant les métriques clés, le registre des tics purgés et le diff complet.
+- Taux de conservation factuelle mesurant la proportion exacte des termes d'origine préservés.
+- Diversité lexicale mesurée par l'indice MATTR (Type-Token Ratio calculé sur des fenêtres glissantes de 50 mots).
+- Burstiness quantifiée par le coefficient de variation de la longueur des phrases.
 
 ---
 
@@ -115,17 +116,17 @@ launch.bat
 uv run streamlit run app.py --server.port 8505
 ```
 
-Ouvrez ensuite votre navigateur sur `http://localhost:8505`.
+Accédez ensuite à l'interface depuis votre navigateur à l'adresse `http://localhost:8505`.
 
 ### 2. Configuration du moteur d'IA
 
 Dans la barre latérale de l'application, choisissez le moteur de traitement :
 1. **Antigravity CLI (Local & sans clé)** : utilise l'exécutable local `agy` déjà authentifié sur votre machine. Aucun envoi de clé API requis.
-2. **Bring Your Own Key / BYOK (API Google Gemini)** : saisissez votre propre clé d'API gratuite issue de Google AI Studio pour exécuter les réécritures directement sans dépendance locale (modèle `gemini-3-flash-preview` par défaut). L'application récupère également la clé depuis la variable d'environnement `GEMINI_API_KEY` si elle est définie.
+2. **Bring Your Own Key / BYOK (API Google Gemini)** : injectez une clé d'API issue de Google AI Studio pour traiter les flux directement sans dépendance binaire locale (modèle `gemini-3-flash-preview` par défaut). Le runtime lit également la clé depuis la variable d'environnement `GEMINI_API_KEY` si elle est définie.
 
 ### 3. Partage d'accès à distance illimité (Cloudflare Tunnel)
 
-Pour donner un accès sécurisé et sans limite de temps à un collaborateur sans ouvrir de port sur votre routeur :
+Pour exposer l'instance à un collaborateur de manière sécurisée sans configurer de redirection de port sur le routeur :
 
 ```bash
 # Sous Windows (en 1 clic avec auto-installation si besoin)
@@ -143,7 +144,7 @@ Le terminal génère une URL publique sécurisée `https://xxxx.trycloudflare.co
 
 ## Tests et qualité de code
 
-Le projet intègre une suite de 44 tests unitaires couvrant les modules d'assainissement, les profils, les algorithmes stylométriques, l'export PDF Playwright et les gestionnaires de fichiers.
+Le projet intègre 44 tests unitaires validant les modules d'assainissement, les profils, les métriques stylométriques, le moteur de rendu PDF Playwright et la gestion des fichiers.
 
 ```bash
 # Exécution de la suite de tests
@@ -156,14 +157,15 @@ uvx ruff check .
 uvx ruff format --check .
 ```
 
-Les flux d'intégration continue GitHub Actions sont définis dans `.github/workflows/ci.yml` et s'exécutent automatiquement sous Ubuntu et Windows pour Python 3.10, 3.11 et 3.12.
+
+Le pipeline d'intégration continue GitHub Actions (`.github/workflows/ci.yml`) valide automatiquement les builds sous Ubuntu et Windows pour les versions Python 3.10, 3.11 et 3.12.
 
 ---
 
 ## Structure des modules du projet
 
 ```text
-HENRI/
+AI-remover/
 ├── app.py                     # Interface graphique Streamlit et orchestration
 ├── launch.bat                 # Lanceur rapide Windows (port 8505)
 ├── partager.bat               # Tunnel de partage distant sécurisé
@@ -179,7 +181,7 @@ HENRI/
 │   ├── ai_bridge.py           # Connecteurs CLI Antigravity et API Gemini
 │   └── file_processor.py      # Traitement documentaire (docx, pdf), Playwright et images
 │
-└── tests/                     # Suite de 44 tests unitaires automatisés
+└── tests/                     # Suite de 46 tests unitaires automatisés
     ├── __init__.py
     ├── test_text_unicode.py   # Validation du nettoyage Unicode et homoglyphes
     ├── test_profiles.py       # Validation des 6 profils et génération des prompts

@@ -1,7 +1,7 @@
 @echo off
-title Antigravity Humanizer Studio
+title AI-Remover
 echo ========================================================
-echo   Lancement de Antigravity Humanizer Studio...
+echo   Lancement de AI-Remover...
 echo   Port dedie : 8505 (pour eviter tout conflit avec Lyonflow)
 echo ========================================================
 echo.

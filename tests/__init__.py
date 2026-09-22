@@ -1,1 +1,1 @@
-"""Tests for HENRI - Antigravity Humanizer Studio."""
+"""Tests for AI-Remover."""
