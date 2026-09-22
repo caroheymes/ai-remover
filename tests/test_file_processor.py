@@ -161,6 +161,13 @@ class TestFileProcessor:
             profile_name="Avocat",
         )
 
+        if not ok and (
+            "executable" in err.lower() or "playwright install" in err.lower()
+        ):
+            pytest.skip(
+                f"Le binaire Chromium n'est pas installé dans cet environnement : {err}"
+            )
+
         assert ok is True
         assert isinstance(pdf_bytes, bytes)
         assert len(pdf_bytes) > 1000
