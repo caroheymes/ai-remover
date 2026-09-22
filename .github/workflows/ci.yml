@@ -51,8 +51,5 @@ jobs:
       - name: Install dependencies
         run: uv pip install -r requirements-dev.txt
 
-      - name: Install Playwright Chromium
-        run: uv run playwright install chromium --with-deps || true
-
       - name: Run Pytest Suite
         run: uv run pytest -v
