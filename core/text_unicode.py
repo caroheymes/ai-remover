@@ -4,6 +4,7 @@ Vendored from watermarks-remover / clean-user-facing-text.
 
 from __future__ import annotations
 
+import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass, field
@@ -189,3 +190,61 @@ def clean_unicode(
         "replaced_count": replaced_count,
     }
     return cleaned, stats
+
+
+def normalize_human_punctuation(text: str) -> str:
+    """Normalise la ponctuation selon la frappe humaine au clavier standard :
+    - Zéro espace avant les ponctuations (?, !, ;, :, ,, ., ))
+    - Un seul espace standard après les ponctuations (?, !, ;, :, ,, .) si suivies de texte
+    - Guillemets droits doubles \" (U+0022) exclusivement (purge de «, », “, ”)
+    - Apostrophes droites ' (U+0027) exclusivement (purge de ’, ‘, `, ´)
+    - Zéro espace insécable ou demi-espace (conversion en espace standard U+0020)
+    - Zéro tiret cadratin ou demi-cadratin (conversion en tiret court standard -)
+    """
+    if not text:
+        return text
+
+    # 1. Conversion de tous les espaces homoglyphes / insécables en espace standard
+    for cp in SPACE_HOMOGLYPHS:
+        text = text.replace(chr(cp), " ")
+
+    # 2. Remplacement des apostrophes courbes/typographiques par l'apostrophe droite standard '
+    text = re.sub(r"[’‘ʼ`´]", "'", text)
+
+    # 3. Remplacement des guillemets français et courbes (avec absorption des espaces internes)
+    text = re.sub(r"[«“„]\s*", '"', text)
+    text = re.sub(r"\s*[»”‟]", '"', text)
+
+    # 4. Remplacement des tirets cadratins / demi-cadratins par le tiret court -
+    text = text.replace("—", "-").replace("–", "-")
+
+    # 5. Suppression de tout espace avant les signes de ponctuation simples et doubles : ? ! ; : , . ) ] }
+    text = re.sub(r"[ \t]+([?!;:,.)\]}])", r"\1", text)
+
+    # 6. Suppression de tout espace après les parenthèses / crochets ouvrants ( [ {
+    text = re.sub(r"([(\[{])[ \t]+", r"\1", text)
+
+    # 7. Espaces après ? ! ; , si suivi d'un caractère alphanumérique ou parenthèse/guillemet ouvrant
+    text = re.sub(r"([?!;,])([a-zA-Z0-9À-ÖØ-öø-ÿ(\[\"])", r"\1 \2", text)
+
+    # 8. Deux-points (:) : assurer un espace après, sauf pour URLs (https://) et heures/ratios (14:30)
+    def _fix_colon_after(m: re.Match) -> str:
+        prefix = m.group(1)
+        next_char = m.group(2)
+        if prefix.lower() in ("http", "https", "ftp", "file") and next_char == "/":
+            return f"{prefix}:{next_char}"
+        if prefix[-1].isdigit() and next_char.isdigit():
+            return f"{prefix}:{next_char}"
+        return f"{prefix}: {next_char}"
+
+    text = re.sub(r"([^\s:]+):([^\s/0-9])", _fix_colon_after, text)
+
+    # 9. Point (.) : assurer un espace après s'il est suivi d'une lettre majuscule, sans toucher aux chiffres (3.14) ni extensions (.py)
+    text = re.sub(r"(?<=[a-zA-ZÀ-ÖØ-öø-ÿ\)])\.(?=[A-ZÀ-ÖØ-ß])", ". ", text)
+
+    # 10. Réduction des espaces multiples
+    text = re.sub(r"[ \t]+", " ", text)
+
+    # 12. Nettoyage des débuts/fins de lignes
+    lines = [line.strip() for line in text.split("\n")]
+    return "\n".join(lines)

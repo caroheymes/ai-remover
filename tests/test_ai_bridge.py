@@ -164,3 +164,19 @@ class TestAiBridge:
         assert "Paragraphe 1 humanisé." in res
         assert "Paragraphe 2 humanisé." in res
         assert mock_cli.call_count == 2
+
+    @patch("core.ai_bridge.call_antigravity_cli")
+    def test_humanize_text_normalizes_punctuation(self, mock_cli):
+        from core.ai_bridge import humanize_text
+
+        mock_cli.return_value = (
+            True,
+            "Voici les faits : « l’outil » est prêt ! Qu’en pensez-vous ?",
+        )
+        ok, res = humanize_text(
+            "Texte source",
+            profile_id="architecte",
+            engine="agy",
+        )
+        assert ok is True
+        assert res == "Voici les faits: \"l'outil\" est prêt! Qu'en pensez-vous?"

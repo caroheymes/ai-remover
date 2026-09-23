@@ -78,3 +78,41 @@ class TestTextUnicode:
         assert cleaned == ""
         assert stats["removed_count"] == 0
         assert stats["replaced_count"] == 0
+
+    def test_normalize_human_punctuation_spacing(self):
+        from core.text_unicode import normalize_human_punctuation
+
+        text = "Bonjour ! Comment vas-tu ? Note : voici les résultats ; tout est prêt ."
+        res = normalize_human_punctuation(text)
+        assert (
+            res == "Bonjour! Comment vas-tu? Note: voici les résultats; tout est prêt."
+        )
+
+    def test_normalize_human_punctuation_quotes_and_apostrophes(self):
+        from core.text_unicode import normalize_human_punctuation
+
+        text = "« L’intelligence artificielle » et “le machine learning” d’aujourd’hui."
+        res = normalize_human_punctuation(text)
+        assert (
+            res
+            == '"L\'intelligence artificielle" et "le machine learning" d\'aujourd\'hui.'
+        )
+
+    def test_normalize_human_punctuation_preserves_urls_and_time(self):
+        from core.text_unicode import normalize_human_punctuation
+
+        text = "Voir https://example.com:8505/api à 14:30 pour 3.14."
+        res = normalize_human_punctuation(text)
+        assert "https://example.com:8505/api" in res
+        assert "14:30" in res
+        assert "3.14" in res
+
+    def test_normalize_human_punctuation_non_breaking_spaces(self):
+        from core.text_unicode import normalize_human_punctuation
+
+        text = "Fin du test\u00a0!\u202fAutre phrase\u2009?"
+        res = normalize_human_punctuation(text)
+        assert "\u00a0" not in res
+        assert "\u202f" not in res
+        assert "\u2009" not in res
+        assert res == "Fin du test! Autre phrase?"

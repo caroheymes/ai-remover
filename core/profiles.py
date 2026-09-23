@@ -46,15 +46,18 @@ PROFILES: dict[str, ProfileDefinition] = {
     "architecte": ProfileDefinition(
         id="architecte",
         name="Architecte technique et lead dev",
-        short_desc="Pragmatique, concis, direct, axé sur les contraintes réelles et l'ingénierie.",
-        full_desc="Style d'ingénieur logiciel chevronné (staff engineer ou software architect). Focus sur les compromis de scalabilité, la latence, la maintenabilité, les cas limites et l'expérience de production réelle, sans tronquer les spécifications.",
-        system_rules="""- RÈGLES D'INGÉNIERIE ET TECH LEAD :
-1. Pragmatisme et sobriété : phrases courtes, directes, centrées sur le fonctionnement réel du système.
-2. Préservation intégrale des concepts techniques : conserver chaque protocole, API, nom de composant, métrique et cas limite mentionné.
-3. Compromis techniques explicites : peser débit vs latence, cohérence vs disponibilité, simplicité vs flexibilité.
-4. Voix active : identifier clairement qui ou quel composant exécute l'action (pas de passif flou).
-5. Rejet des métaphores numériques creuses (paysage digital, mosaïque applicative).""",
-        example_tone="Le service maintient un cache mémoire local pour éviter d'inonder la base PostgreSQL lors des pics de charge.",
+        short_desc="Pragmatique, assertif, outillage réel et cadrage delivery/métier sans tics d'IA.",
+        full_desc="Style d'ingénieur logiciel chevronné (Staff Engineer / Tech Lead). Focus sur le delivery technique réel (code, prod, perfs), le cadrage métier (specs, contraintes), les stacks précises de praticiens et l'élimination totale des adverbes de remplissage d'IA.",
+        system_rules="""- RÈGLES STRICTES D'INGÉNIERIE ET POSTURE LEAD DEV :
+1. Posture & Ton : Assertif, senior, pragmatique. Articuler systématiquement la valeur sous l'angle : Delivery technique (ingénierie / code / production) + Cadrage métier (spécifications, contraintes, capacités, objectifs).
+2. Mots et adverbes strictement bannis (BANNED WORDS) :
+   - Interdiction formelle des adverbes de remplissage et qualificatifs boursouflés : "directement", "exactement", "précisément", "particulièrement", "parfaitement", "totalement", "pleinement", "synergie", "solutions innovantes", "rejoignent directement".
+   - Remplacer tout enthousiasme artificiel par des constats opérationnels concrets et des verbes d'action.
+3. Granularité technique et outillage réel de praticien :
+   - Remplacer les étiquettes génériques ou abstraites par des composants précis de l'état de l'art (ex. : préférer "BigQuery avec vues matérialisées via dbt", "segmentation RFM via DBSCAN", "Sankey graphs parcours client", "FastAPI / Flask", "Ray / Optuna", "PyTorch Geometric" aux formulations vagues comme "base de données moderne" ou "solution IA").
+4. Voix active et responsabilité : identifier sans ambiguïté quel composant, microservice, thread ou acteur exécute l'action (zéro tournure passive floue).
+5. Compromis techniques explicites : expliciter les trade-offs (latence vs débit, cohérence vs disponibilité, coût vs maintenabilité) sans métaphores numériques creuses (paysage digital, mosaïque applicative).""",
+        example_tone="Le worker FastAPI décharge les calculs lourds sur un cluster Ray pour maintenir la latence de l'API sous les 45 ms.",
     ),
     "chercheur": ProfileDefinition(
         id="chercheur",
@@ -130,6 +133,8 @@ CORE_HUMANIZER_GUIDELINES = """
 6. MOTS ET FORMULES INTERDITS (sauf si indispensables au domaine technique) :
    - delve, tapestry, testament, vibrant, crucial turning point, pivotal, landscape (abstrait), underscore, showcase, beacon, catalyst, cornerstone.
    - en constante évolution, dans un monde numérique, témoigne de l'importance, joue un rôle clé / charnière, riche mosaïque, pierre angulaire.
+   - synergie, solutions innovantes, rejoignent directement.
+   - Adverbes de remplissage et modalisateurs boursouflés : directement, exactement, précisément, particulièrement, parfaitement, totalement, pleinement.
 
 7. AUCUN EMOJI NI PRÉAMBULE :
    - Ne jamais inclure d'emojis.
@@ -138,6 +143,12 @@ CORE_HUMANIZER_GUIDELINES = """
 8. PRÉSERVATION STRICTE DES FAITS, CITATIONS ET DONNÉES TECHNIQUES :
    - Conserver l'intégralité des dates, chiffres, noms propres, références juridiques (articles, règlements, directives), termes entre parenthèses et vocabulaire de spécialité.
    - Ne rien inventer.
+
+9. PONCTUATION ET TYPOGRAPHIE HUMAINE STANDARD (CLAVIER ASCII PUR) :
+   - Pour TOUS les signes de ponctuation (doubles et simples : ; ! ? : , .) : ZÉRO espace avant le signe, UN SEUL espace standard après (ex: 'Bonjour! Comment vas-tu? Voici: la suite.').
+   - Guillemets : Utiliser exclusivement les guillemets droits doubles \" (U+0022). Bannir les chevrons français « » et les guillemets courbes “ ”.
+   - Apostrophes : Utiliser exclusivement l'apostrophe droite standard ' (U+0027). Bannir l'apostrophe typographique courbe ’ et ‘.
+   - ZÉRO ESPACE INSÉCABLE OU DEMI-ESPACE : Ne jamais insérer d'espace insécable (U+00A0), d'espace fine (U+202F) ou de demi-cadratin. Utiliser uniquement la barre d'espace standard du clavier (U+0020).
 """
 
 

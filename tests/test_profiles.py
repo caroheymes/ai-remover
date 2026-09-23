@@ -52,3 +52,15 @@ class TestProfiles:
         assert PROFILES["communicant"].name in prompt
         assert "RÈGLES DE RÉDACTION ORGANIQUE" in prompt
         assert input_text in prompt
+
+    def test_build_prompt_architecte_lead_dev(self):
+        input_text = "Notre architecture utilise des solutions innovantes en synergie."
+        prompt = build_humanize_prompt(input_text=input_text, profile_id="architecte")
+        assert PROFILES["architecte"].name in prompt
+        assert "RÈGLES STRICTES D'INGÉNIERIE ET POSTURE LEAD DEV" in prompt
+        assert "BANNED WORDS" in prompt
+        assert "directement" in prompt
+        assert "synergie" in prompt
+        assert "Delivery technique" in prompt
+        assert "Cadrage métier" in prompt
+        assert "BigQuery avec vues matérialisées via dbt" in prompt

@@ -267,7 +267,7 @@ def humanize_text(
 ) -> tuple[bool, str]:
     """Orchestre l'humanisation complète d'un texte ou document avec découpage par blocs pour garantir 100 % d'exhaustivité et zéro omission."""
     from core.profiles import build_humanize_prompt
-    from core.text_unicode import clean_unicode
+    from core.text_unicode import clean_unicode, normalize_human_punctuation
 
     clean_in, _ = clean_unicode(input_text, normalize_spaces=True)
     if not clean_in.strip():
@@ -294,7 +294,7 @@ def humanize_text(
             return False, out
 
         clean_out, _ = clean_unicode(out, normalize_spaces=True)
-        clean_out = clean_out.replace("—", ",").replace("–", "-")
+        clean_out = normalize_human_punctuation(clean_out)
         results.append(clean_out.strip())
 
     return True, "\n\n".join(results)

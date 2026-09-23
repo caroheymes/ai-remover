@@ -243,6 +243,24 @@ AI_PHRASE_PATTERNS: tuple[tuple[str, str, float, str], ...] = (
         "Résidus de conversation",
     ),
     (
+        r"\b(solutions?\s+innovantes?|solutions?\s+novatrices?)\b",
+        "solutions innovantes / novatrices",
+        1.2,
+        "Formules et clichés d'IA",
+    ),
+    (
+        r"\brejoign(?:ent|ent\s+directement|e\s+directement)\b",
+        "rejoignent directement",
+        1.1,
+        "Adverbes et remplissage",
+    ),
+    (
+        r"\b(pleinement|totalement|parfaitement|particulièrement|exactement|précisément)\s+(?:adapté|aligné|conforme|intégré|répondre|cohérent)\b",
+        "adverbes de remplissage (pleinement/parfaitement)",
+        1.0,
+        "Adverbes et remplissage",
+    ),
+    (
         r"—|–",
         "Tiret cadratin / demi-cadratin (— / –)",
         0.8,
@@ -424,6 +442,10 @@ def generate_editorial_report(
             f"Purge déterministe de **{invisible_count} caractère(s) Unicode invisible(s)** ou espaces de traçage synthétique."
         )
 
+    typo_details.append(
+        "Frappe humaine standard : zéro espace avant la ponctuation (?;!:), apostrophes droites (`'`) et guillemets droits (`\"`) exclusivement."
+    )
+
     # Vérification des listes à puces robotiques
     if re.search(r"(?m)^\s*[\*\-]\s+\*\*[^\*:]+\*\*\s*:", input_text) and not re.search(
         r"(?m)^\s*[\*\-]\s+\*\*[^\*:]+\*\*\s*:", output_text
@@ -541,9 +563,10 @@ def generate_editorial_report(
         "architecte": {
             "title": "Profil Architecte technique et lead dev",
             "points": [
-                "Formulation directe, pragmatique et orientée production logicielle.",
-                "Adoption de la voix active (identification explicite du composant ou de l'acteur qui opère).",
-                "Rejet des métaphores numériques floues (paysage digital) au profit des contraintes d'ingénierie réelles.",
+                "Posture senior et assertive : cadrage métier (specs, contraintes) et delivery technique (code, prod, perfs).",
+                "Élimination stricte des adverbes de remplissage (directement, précisément, particulièrement, synergie, solutions innovantes).",
+                "Granularité technique réelle : remplacement des abstractions par des stacks concrètes de praticiens (dbt, Ray, FastAPI, etc.).",
+                "Voix active et formulation directe des compromis d'ingénierie.",
             ],
         },
         "chercheur": {

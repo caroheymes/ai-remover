@@ -95,6 +95,24 @@ class TestScoreStylometry:
         assert editorial.audit_markdown != ""
         assert "# Journal d'audit" in editorial.audit_markdown
 
+    def test_generate_editorial_report_architecte(self):
+        input_text = "Ces solutions innovantes rejoignent directement nos objectifs et sont parfaitement adaptées."
+        output_text = "Le pipeline dbt matérialise les vues BigQuery pour alimenter le modèle en 3 minutes."
+        editorial = generate_editorial_report(
+            input_text=input_text,
+            output_text=output_text,
+            profile_id="architecte",
+        )
+        assert isinstance(editorial, EditorialReport)
+        categories = [c["category"] for c in editorial.choices_made]
+        assert any("Architecte" in cat for cat in categories)
+        assert any(
+            any("directement" in pt for pt in c["items"])
+            for c in editorial.choices_made
+            if "Architecte" in c["category"]
+        )
+        assert editorial.rep_in.ai_phrase_count >= 2
+
     def test_compute_word_diff_html(self):
         from core.score_stylometry import compute_word_diff_html
 
