@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "description": "Golden Dataset de reference LLMOps et Ragas pour l'evaluation de retention factuelle, d'eradication des cliches IA et d'hygiene Unicode.",
+  "version": "1.1.0",
+  "description": "Golden Dataset bilingue (FR/EN) de reference LLMOps et Ragas pour l'evaluation de retention factuelle, d'eradication des cliches IA et d'hygiene Unicode.",
   "cases": [
     {
       "id": "arch_01_interflora_mlops",
@@ -69,10 +69,56 @@
     {
       "id": "ana_01_arbitrage_cloud_finops",
       "profile_id": "analyste",
+      "lang": "fr",
       "source_text": "En conclusion, la migration vers Kubernetes représente un catalyseur de transformation incontournable. Il est crucial de noter que maintenir 14 instances GPU A100 sous-utilisées à 18 % engendre un surcoût mensuel de 42 000 EUR par rapport à une exécution serverless par lots.",
       "reference_human_text": "Maintenir 14 instances GPU A100 utilisées à 18 % génère un surcoût de 42 000 EUR par mois face à un ordonnancement serverless par lots sur Kubernetes. Le basculement vers des nœuds à la demande réduit immédiatement la facture fixe au prix d'une latence de démarrage à froid de quelques secondes.",
       "required_facts": ["Kubernetes", "14 instances", "A100", "18 %", "42 000 EUR"],
       "forbidden_cliches": ["en conclusion", "catalyseur", "il est crucial de noter"]
+    },
+    {
+      "id": "en_arch_01_staff_ai_cover",
+      "profile_id": "architecte",
+      "lang": "en",
+      "source_text": "I am thrilled to apply for the Staff AI Engineer role, which sits at the intersection of distributed systems and applied machine learning and aligns perfectly with my background. At Interflora, I leveraged my expertise to deliver cutting-edge solutions—deploying a Prophet forecasting pipeline on AWS SageMaker with a 15% MAPE and saving 500 kEUR across geospatial routing in Python, Uber H3, and BigQuery. Thank you for your time and consideration.",
+      "reference_human_text": "At Interflora, I shipped a production Prophet forecasting pipeline on AWS SageMaker reaching 15% MAPE to drive operational staffing. On the geospatial side, I redesigned territory routing in Python, Uber H3, and BigQuery, generating 500 kEUR in measured savings.",
+      "required_facts": ["Interflora", "Prophet", "AWS SageMaker", "15%", "500 kEUR", "Python", "Uber H3", "BigQuery"],
+      "forbidden_cliches": ["thrilled to apply", "at the intersection of", "aligns perfectly with my background", "leveraged my expertise", "cutting-edge solutions", "thank you for your time and consideration"]
+    },
+    {
+      "id": "en_arch_02_multi_agent_rag_cover",
+      "profile_id": "architecte",
+      "lang": "en",
+      "source_text": "In today's fast-paced AI landscape, building reliable agentic workflows plays a pivotal role. With a proven track record of fostering innovation at ITG Consultants, I seamlessly orchestrated a Python 3.12 multi-agent platform combining LangGraph, CrewAI, and MCP, alongside a document RAG pipeline on MinerU and ChromaDB gated by Ragas evaluations. Please do not hesitate to reach out.",
+      "reference_human_text": "At ITG Consultants, I architected and shipped a Python 3.12 multi-agent platform built on LangGraph, CrewAI, and MCP, paired with a document extraction RAG pipeline running MinerU and ChromaDB and gated in CI by Ragas evaluations.",
+      "required_facts": ["ITG Consultants", "Python 3.12", "LangGraph", "CrewAI", "MCP", "RAG", "MinerU", "ChromaDB", "Ragas"],
+      "forbidden_cliches": ["fast-paced", "landscape", "plays a pivotal role", "proven track record", "fostering innovation", "seamlessly", "please do not hesitate to reach out"]
+    },
+    {
+      "id": "en_arch_03_distributed_scraping_nlp",
+      "profile_id": "architecte",
+      "lang": "en",
+      "source_text": "Not only did I build a high-scale data collection engine at GL events processing 10M+ pages per year for 200+ M&A studies, but it also serves as a testament to my passion for scalable pipelines. Furthermore, I deployed an active-learning SetFit classifier reaching F1 > 0.85 with BERTopic and operated Scrapy, Playwright, and GraphQL crawlers across 4 countries.",
+      "reference_human_text": "At GL events, I built the distributed collection engine processing 10M+ pages per year across 200+ M&A and market studies. I also shipped a multi-label SetFit active-learning classifier (F1 > 0.85) paired with BERTopic, backed by Scrapy, Playwright, and GraphQL crawlers across 4 countries.",
+      "required_facts": ["GL events", "10M+", "200+", "M&A", "SetFit", "0.85", "BERTopic", "Scrapy", "Playwright", "GraphQL", "4 countries"],
+      "forbidden_cliches": ["not only", "testament to", "furthermore"]
+    },
+    {
+      "id": "en_ana_01_gpu_finops_tradeoff",
+      "profile_id": "analyste",
+      "lang": "en",
+      "source_text": "In conclusion, migrating inference workloads to Kubernetes is a true game-changer. It is crucial to note that keeping 14 NVIDIA A100 GPUs idling at 18% utilization burns an extra 42,000 EUR per month compared to spot batch scheduling—underscoring the need for immediate FinOps governance.",
+      "reference_human_text": "Keeping 14 NVIDIA A100 GPUs at 18% utilization adds 42,000 EUR per month in avoidable fixed cost versus batch scheduling on Kubernetes spot nodes. Moving non-interactive jobs to spot capacity cuts that baseline immediately, at the cost of a few seconds of cold-start latency and preemption retries.",
+      "required_facts": ["Kubernetes", "14 NVIDIA A100", "18%", "42,000 EUR"],
+      "forbidden_cliches": ["in conclusion", "game-changer", "it is crucial to note", "underscoring the need"]
+    },
+    {
+      "id": "en_law_01_gdpr_art28_dpa",
+      "profile_id": "avocat",
+      "lang": "en",
+      "source_text": "Navigating the complexities of data protection requires careful attention, and it is worth noting that Article 28 of the GDPR plays a vital role here. The hosting agreement executed on March 14, 2026 not only omits the mandatory 48-hour breach notification window, but also authorizes US data transfers without Standard Contractual Clauses. I hope this helps.",
+      "reference_human_text": "The hosting agreement signed on March 14, 2026 breaches Article 28 of the GDPR: it omits the 48-hour data breach notification requirement and permits transfers to the US without Standard Contractual Clauses. Do not counter-sign until both clauses are inserted into the DPA.",
+      "required_facts": ["March 14, 2026", "Article 28", "GDPR", "48-hour", "Standard Contractual Clauses"],
+      "forbidden_cliches": ["navigating the complexities", "worth noting", "plays a vital role", "i hope this helps"]
     }
   ]
 }

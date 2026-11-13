@@ -16,7 +16,9 @@ class TestEvaluatorAndGoldenDataset:
             Path(__file__).resolve().parent.parent / "evals" / "golden_dataset.json"
         )
         cases = load_golden_dataset(dataset_path)
-        assert len(cases) >= 8
+        assert len(cases) >= 14
+        en_cases = [c for c in cases if c.get("lang") == "en"]
+        assert len(en_cases) >= 5
         for case in cases:
             assert "id" in case
             assert "profile_id" in case

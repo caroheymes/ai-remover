@@ -41,19 +41,20 @@ Le serveur `mcp_server.py` expose trois outils sur le protocole MCP (`stdio`): `
 | `core/evaluator.py` | Créé | Évaluation déterministe (rétention factuelle, éradication des tics IA, hygiène Unicode) et métriques Ragas hors-LLM (`NonLLMStringSimilarity`, `RougeScore`, repli lexical F1). |
 | `core/__init__.py` | Modifié | Export public des fonctions de modèles `agy`, de télémétrie et d'évaluation. |
 | `app.py` | Modifié | Ajout du menu déroulant des petits modèles locaux `agy` et passage de `source="ui"` à la télémétrie. |
-| `api.py` | Créé | Serveur REST FastAPI hybride (local `agy` et Cloud Run via `X-Gemini-API-Key`) sur le port `8506`. |
-| `mcp_server.py` | Créé | Serveur FastMCP (`stdio`) exposant `humanize_text`, `analyze_ai_density` et `clean_invisible_unicode` avec repli automatique API vers coeur Python. |
+| `api.py` | Créé | Serveur REST FastAPI hybride v1.2.0 (local `agy`, Cloud Run via `X-Gemini-API-Key` et verrouillage `Authorization: Bearer` via `AI_REMOVER_API_TOKEN`) sur le port `8506`. |
+| `mcp_server.py` | Créé | Serveur FastMCP (`stdio`) exposant `humanize_text`, `analyze_ai_density` et `clean_invisible_unicode` avec support Bearer et repli automatique API vers coeur Python. |
 | `.mcp.json` | Créé | Configuration MCP locale du dépôt `HENRI`. |
 | `launch.bat` | Modifié | Nettoyage automatique du port `8505` avant lancement de Streamlit. |
 | `launch_api.bat` | Créé | Nettoyage automatique du port `8506` et lancement du serveur Uvicorn local. |
-| `Dockerfile` | Créé | Image conteneur `python:3.12-slim` configurée sur le port `8080` pour Google Cloud Run. |
-| `evals/golden_dataset.json` | Créé | Jeu d'étalonnage de 9 cas métiers réalistes (`architecte`, `avocat`, `analyste`) avec entités critiques et expressions interdites. |
+| `Dockerfile` / `.dockerignore` | Créés | Image conteneur `python:3.12-slim` légère sur le port `8080` avec exclusion stricte des environnements virtuels, journaux et tests. |
+| `deploy_cloud_run.ps1` | Créé | Script PowerShell de déploiement Cloud Run (`min-instances=0`, `max-instances=2`, `512Mi`, purge Artifact Registry à 2 images, jeton Bearer aléatoire). |
+| `evals/golden_dataset.json` | Créé | Jeu d'étalonnage bilingue v1.1.0 de 14 cas métiers réalistes (9 FR + 5 EN sur `architecte`, `avocat`, `analyste`) avec entités critiques et expressions interdites. |
 | `evals/run_ragas_eval.py` | Créé | Harnais CLI d'exécution des évaluations hors-ligne et en conditions réelles (`--live`), générant `logs/eval_report.json`. |
 | `docs/GUIDE_API_MCP_LLMOPS.md` | Créé | Documentation technique complète (architecture, API REST, Cloud Run, MCP, `career-ops` et LLMOps). |
 | `README.md` | Modifié | Référencement de l'architecture hybride, des outils MCP, de la suite d'évaluation et du guide technique. |
 | `requirements.txt` / `requirements-dev.txt` | Modifiés | Ajout de `fastapi`, `uvicorn`, `fastmcp` et `httpx`. |
 | `tests/conftest.py` | Créé | Isolation automatique du fichier de télémétrie vers `tmp_path` pendant les tests unitaires. |
-| `tests/test_*.py` | Créés / Modifiés | Couverture complète (`test_api.py`, `test_mcp_server.py`, `test_evaluator.py`, `test_telemetry.py`, `test_ai_bridge.py`), soit 69 tests passants. |
+| `tests/test_*.py` | Créés / Modifiés | Couverture complète (`test_api.py`, `test_mcp_server.py`, `test_evaluator.py`, `test_telemetry.py`, `test_ai_bridge.py`, `test_profiles.py`), soit 71 tests passants. |
 
 Note importante sur l'arbre Git local: les fichiers `core/profiles.py`, `core/score_stylometry.py` et `tests/test_profiles.py` contenaient déjà des modifications locales non commitées avant cette session. Ces modifications ont été intégralement préservées.
 
@@ -113,14 +114,14 @@ Grâce aux instructions ajoutées dans `modes/_custom.md`, l'agent rédige d'abo
 
 ### Exécuter les contrôles qualité, tests et évaluations Ragas
 
-Depuis `C:\Users\Admin\Documents\HENRI`, exécuter le linter Ruff et la suite complète des 69 tests unitaires et d'intégration:
+Depuis `C:\Users\Admin\Documents\HENRI`, exécuter le linter Ruff et la suite complète des 71 tests unitaires et d'intégration:
 
 ```powershell
 uv run --with ruff ruff check .
 uv run --with fastapi --with httpx --with fastmcp pytest -q
 ```
 
-Pour lancer le harnais d'évaluation sur le Golden Dataset hors-ligne (validation instantanée des garde-fous):
+Pour lancer le harnais d'évaluation sur le Golden Dataset bilingue hors-ligne (14 cas FR/EN):
 
 ```powershell
 uv run python evals/run_ragas_eval.py
@@ -132,20 +133,12 @@ Pour lancer un test de non-régression bout en bout en conditions réelles sur `
 uv run python evals/run_ragas_eval.py --live --limit 3 --model gemini-3.8-flash-low
 ```
 
-### Déployer l'API externe sur Google Cloud Run
+### Déployer l'API externe sécurisée sur Google Cloud Run
 
-Lorsque la publication externe sera souhaitée, exécuter depuis `C:\Users\Admin\Documents\HENRI`:
+Après authentification GCP (`gcloud auth login`), exécuter depuis `C:\Users\Admin\Documents\HENRI`:
 
 ```powershell
-gcloud builds submit --tag europe-west1-docker.pkg.dev/<PROJECT_ID>/ai-remover/api:latest
-gcloud run deploy ai-remover-api `
-  --image europe-west1-docker.pkg.dev/<PROJECT_ID>/ai-remover/api:latest `
-  --region europe-west1 `
-  --platform managed `
-  --allow-unauthenticated `
-  --port 8080
+powershell -ExecutionPolicy Bypass -File .\deploy_cloud_run.ps1 -ProjectId <PROJECT_ID>
 ```
 
-## Prochaines pistes d'évolution
-
-Trois chantiers naturels prolongent l'état actuel si besoin. Le premier consiste à enrichir `evals/golden_dataset.json` avec des cas anglophones pour couvrir les lettres de motivation internationales générées par `career-ops` (la règle de conservation de la langue source est déjà active dans le prompt système, mais les motifs de clichés du jeu de test ciblent surtout le français). Le deuxième porte sur l'ajout d'une authentification par jeton applicatif (`Authorization: Bearer`) devant `api.py` avant une ouverture publique sur Cloud Run afin de réserver le point de terminaison aux seuls outils autorisés. Le troisième consiste à versionner proprement cet ensemble par un commit Git structuré une fois les changements préexistants sur `core/profiles.py` et `core/score_stylometry.py` validés.
+Ce script configure une purge automatique Artifact Registry conservant uniquement les 2 dernières images, génère un jeton `AI_REMOVER_API_TOKEN` aléatoire requis dans `Authorization: Bearer <token>`, plafonne le service à `min-instances=0` et `max-instances=2` (`512Mi`) et ne stocke aucune clé Gemini sur le serveur.

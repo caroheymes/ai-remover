@@ -89,8 +89,36 @@ class TestInternalAndHybridApi:
     @patch("api.is_agy_available", return_value=False)
     def test_humanize_missing_key_when_no_cli_returns_401(self, _mock_agy, monkeypatch):
         monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        monkeypatch.delenv("AI_REMOVER_API_TOKEN", raising=False)
         resp = client.post(
             "/api/v1/humanize",
             json={"text": "Texte sur Cloud Run sans cle.", "engine": "BYOK"},
         )
         assert resp.status_code == 401
+
+    def test_bearer_token_enforcement_when_configured(self, monkeypatch):
+        monkeypatch.setenv("AI_REMOVER_API_TOKEN", "secret-cloud-run-token-42")
+
+        # /health reste accessible pour les sondes Cloud Run
+        h_resp = client.get("/health")
+        assert h_resp.status_code == 200
+        assert h_resp.json()["bearer_auth_enabled"] is True
+
+        # Sans en-tete Authorization -> 401
+        no_auth = client.get("/api/v1/profiles")
+        assert no_auth.status_code == 401
+
+        # Mauvais jeton -> 401
+        bad_auth = client.get(
+            "/api/v1/profiles",
+            headers={"Authorization": "Bearer wrong-token"},
+        )
+        assert bad_auth.status_code == 401
+
+        # Bon jeton -> 200
+        good_auth = client.get(
+            "/api/v1/profiles",
+            headers={"Authorization": "Bearer secret-cloud-run-token-42"},
+        )
+        assert good_auth.status_code == 200
+        assert len(good_auth.json()["profiles"]) >= 5

@@ -135,23 +135,15 @@ curl -X POST "https://ai-remover-api-xxxx.ew.a.run.app/api/v1/humanize" \
 
 Le `Dockerfile` situé à la racine construit une image légère basée sur `python:3.12-slim` (sans Playwright ni dépendances bureautiques lourdes) qui écoute sur le port injecté par Cloud Run (`$PORT`).
 
-```bash
-# Construction et envoi de l'image
-gcloud builds submit --tag europe-west1-docker.pkg.dev/VOTRE_PROJET/containers/ai-remover-api:latest
-
-# Déploiement en mode BYOK pur (chaque client fournit X-Gemini-API-Key)
-gcloud run deploy ai-remover-api \
-  --image europe-west1-docker.pkg.dev/VOTRE_PROJET/containers/ai-remover-api:latest \
-  --region europe-west1 \
-  --allow-unauthenticated
-
-# Ou déploiement avec clé par défaut montée depuis Google Secret Manager
-gcloud run deploy ai-remover-api \
-  --image europe-west1-docker.pkg.dev/VOTRE_PROJET/containers/ai-remover-api:latest \
-  --region europe-west1 \
-  --set-secrets GEMINI_API_KEY=gemini-api-key-secret:latest \
-  --allow-unauthenticated
+```powershell
+# Déploiement clé en main sécurisé (jeton Bearer généré, purge Artifact Registry à 2 images, min-instances=0)
+powershell -ExecutionPolicy Bypass -File .\deploy_cloud_run.ps1 -ProjectId VOTRE_PROJET
 ```
+
+Le script `deploy_cloud_run.ps1` applique trois garde-fous financiers et de sécurité:
+1. Un fichier `.dockerignore` exclut `.venv`, `.git`, `logs` et `tests` pour réduire le contexte envoyé à Cloud Build à quelques dizaines de kilo-octets.
+2. Une politique de rétention Artifact Registry (`keep-latest-2`) supprime automatiquement les anciennes révisions d'images afin de rester dans le palier gratuit de stockage.
+3. Le service Cloud Run tourne avec `--min-instances 0 --max-instances 2 --memory 512Mi --cpu-throttling`, exige un en-tête `Authorization: Bearer <AI_REMOVER_API_TOKEN>` sur toutes les routes `/api/v1/*` et ne stocke aucune clé `GEMINI_API_KEY` côté serveur (injection uniquement à la volée via `X-Gemini-API-Key`).
 
 ## Serveur MCP `ai-remover` pour Antigravity et Claude Code
 
@@ -197,9 +189,9 @@ claude mcp list
 
 Pour empêcher toute perte de précision factuelle (oubli d'un chiffre, d'un outil ou d'une référence juridique) lors d'un changement de prompt ou de modèle, trois briques encadrent le Harness.
 
-### Corpus de référence (`evals/golden_dataset.json`)
+### Corpus de référence bilingue (`evals/golden_dataset.json`)
 
-Le Golden Dataset réunit 9 cas métiers complets couvrant les profils `architecte` (réalisations MLOps Interflora, architectures multi-agents ITG Consultants, scraping distribué GL events, LTV Qonto et Michelin), `avocat` (clause de non-concurrence Cass. soc. 10 juillet 2002, rupture brutale L. 442-1, sous-traitance RGPD article 28) et `analyste` (arbitrage FinOps GPU Kubernetes). Chaque entrée définit le texte source saturé d'IA, une réécriture humaine de référence, la liste exacte des `required_facts` et la liste des `forbidden_cliches`.
+Le Golden Dataset (v1.1.0) réunit 14 cas métiers complets (9 en français et 5 en anglais) couvrant les profils `architecte` (réalisations MLOps Interflora, architectures multi-agents ITG Consultants, scraping distribué GL events, LTV Qonto et Michelin, lettres internationales Staff AI Engineer), `avocat` (clause de non-concurrence Cass. soc. 10 juillet 2002, rupture brutale L. 442-1, sous-traitance RGPD article 28 FR et DPA EN) et `analyste` (arbitrage FinOps GPU Kubernetes FR et EN). Chaque entrée définit le texte source saturé d'IA, une réécriture humaine de référence, la liste exacte des `required_facts` et la liste des `forbidden_cliches`.
 
 ### Moteur d'évaluation et intégration Ragas (`core/evaluator.py`)
 
@@ -240,13 +232,13 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8506/api/v1/telemetry/summary" | Conver
 
 ## Qualité logicielle et maintenance courante
 
-L'ensemble du dépôt est couvert par 69 tests automatisés sous Pytest et vérifié par Ruff.
+L'ensemble du dépôt est couvert par 71 tests automatisés sous Pytest et vérifié par Ruff.
 
 ```powershell
 # Verification lint et formatage
 uv run --with ruff ruff check .
 uv run --with ruff ruff format --check .
 
-# Execution complete des 69 tests unitaires et d'integration
+# Execution complete des 71 tests unitaires et d'integration
 uv run --with fastapi --with httpx --with fastmcp pytest -v
 ```

@@ -61,8 +61,9 @@ PROFILES: dict[str, ProfileDefinition] = {
         system_rules="""- RÈGLES STRICTES D'INGÉNIERIE ET POSTURE LEAD DEV :
 1. Posture & Ton : Assertif, senior, pragmatique. Articuler systématiquement la valeur sous l'angle : Delivery technique (ingénierie / code / production) + Cadrage métier (spécifications, contraintes, capacités, objectifs).
 2. Interdiction formelle des clichés de posture et de candidature d'IA (STRICTEMENT BANNIS) :
-   - Interdiction absolue des formules stéréotypées : "correspond à mon parcours", "s'inscrit dans la continuité de mon parcours", "en adéquation avec mon profil", "à la croisée de / du / des", "au carrefour de", "au confluent de", "fort de mon expérience", "mettre à profit mes compétences", "force de proposition", "relever des défis", "passionné par".
-   - Remplacement obligatoire : Énoncer directement et sobrement les faits bruts, les réalisations en production, les volumes traités et la stack (ex: "J'ai conçu l'architecture temps réel de X sous Kafka" plutôt que "Cette mission à la croisée de la data et du dev correspond à mon parcours").
+   - Interdiction absolue des formules stéréotypées FR : "correspond à mon parcours", "s'inscrit dans la continuité de mon parcours", "en adéquation avec mon profil", "à la croisée de / du / des", "au carrefour de", "au confluent de", "fort de mon expérience", "mettre à profit mes compétences", "force de proposition", "relever des défis", "passionné par".
+   - Interdiction absolue des formules stéréotypées EN : "thrilled to apply", "excited to apply", "aligns perfectly with my background", "at the intersection of", "at the crossroads of", "leverage my skills", "leverage my expertise", "proven track record", "cutting-edge solutions", "seamlessly", "passionate about", "dynamic environment", "thank you for your time and consideration", "look forward to hearing from you".
+   - Remplacement obligatoire : Énoncer directement et sobrement les faits bruts, les réalisations en production, les volumes traités et la stack (ex: "J'ai conçu l'architecture temps réel de X sous Kafka" ou "I built the real-time event pipeline on Kafka").
 3. Mots et adverbes strictement bannis (BANNED WORDS) :
    - Interdiction formelle des adverbes de remplissage et qualificatifs boursouflés : "directement", "exactement", "précisément", "particulièrement", "parfaitement", "totalement", "pleinement", "synergie", "solutions innovantes", "rejoignent directement", "en constante évolution", "paysage technologique", "écosystème dynamique".
    - Remplacer tout enthousiasme artificiel par des constats opérationnels concrets et des verbes d'action.
@@ -163,6 +164,9 @@ CORE_HUMANIZER_GUIDELINES = """
    - Guillemets : Utiliser exclusivement les guillemets droits doubles \" (U+0022). Bannir les chevrons français « » et les guillemets courbes “ ”.
    - Apostrophes : Utiliser exclusivement l'apostrophe droite standard ' (U+0027). Bannir l'apostrophe typographique courbe ’ et ‘.
    - ZÉRO ESPACE INSÉCABLE OU DEMI-ESPACE : Ne jamais insérer d'espace insécable (U+00A0), d'espace fine (U+202F) ou de demi-cadratin. Utiliser uniquement la barre d'espace standard du clavier (U+0020).
+10. CONSERVATION STRICTE DE LA LANGUE DU TEXTE SOURCE (FR / EN / AUTRE) :
+   - Restituer impérativement le texte final dans la langue exacte du texte source, sans jamais le traduire.
+   - Si le texte source est en anglais, rédiger l'intégralité de la sortie dans un anglais idiomatique, sobre et direct d'ingénieur ou de praticien senior, en appliquant toutes les interdictions ci-dessus (zéro "delve into", "testament to", "seamlessly", "pivotal", "thrilled to apply", "at the intersection of", "not only... but also", "thank you for your time and consideration").
 """
 
 
@@ -180,10 +184,11 @@ def build_humanize_prompt(
         f"Ton rôle : Réécrire et humaniser le texte ci-dessous selon la voix de : **{profile.name}**.",
         "",
         "=== MISSION CRUCIALE ===",
-        "1. RESTITUTION SUBSTANTIELLE : Tu dois restituer 100 % de la matière informative, factuelle et technique du texte source, sans omission d'arguments de fond.",
-        "2. INTERDICTION FORMELLE DU REMPLACEMENT SYNONYMIQUE CREUX ET DES CLICHÉS D'IA : Ne remplace JAMAIS un cliché d'IA par un autre cliché (ex: interdiction absolue de 'correspond à mon parcours', 'à la croisée de/du', 'au carrefour de', 'solutions innovantes', 'synergie'). Coupe les bavardages, va droit aux faits opérationnels, à la stack et aux chiffres.",
-        "3. ZÉRO FORMULE DE POLITESSE D'IA : Supprime toutes les formules de politesse préfabriquées ('Je reste à votre entière disposition...', 'N'hésitez pas...') sans les remplacer par d'autres banalités.",
-        "4. PRÉSERVATION DES FAITS ET RÉFÉRENCES : Conserve scrupuleusement tous les chiffres, dates, noms, stacks, métriques et composants techniques.",
+        "1. CONSERVATION DE LA LANGUE SOURCE : Réécris obligatoirement dans la langue exacte du texte source (anglais si le texte source est en anglais, français s'il est en français). Ne traduis jamais.",
+        "2. RESTITUTION SUBSTANTIELLE : Tu dois restituer 100 % de la matière informative, factuelle et technique du texte source, sans omission d'arguments de fond.",
+        "3. INTERDICTION FORMELLE DU REMPLACEMENT SYNONYMIQUE CREUX ET DES CLICHÉS D'IA : Ne remplace JAMAIS un cliché d'IA par un autre cliché (ex: interdiction absolue de 'correspond à mon parcours', 'à la croisée de/du', 'au carrefour de', 'solutions innovantes', 'synergie', 'thrilled to apply', 'at the intersection of', 'seamlessly', 'cutting-edge solutions'). Coupe les bavardages, va droit aux faits opérationnels, à la stack et aux chiffres.",
+        "4. ZÉRO FORMULE DE POLITESSE D'IA : Supprime toutes les formules de politesse préfabriquées ('Je reste à votre entière disposition...', 'N'hésitez pas...', 'Thank you for your time and consideration', 'Please do not hesitate to reach out') sans les remplacer par d'autres banalités.",
+        "5. PRÉSERVATION DES FAITS ET RÉFÉRENCES : Conserve scrupuleusement tous les chiffres, dates, noms, stacks, métriques et composants techniques.",
         "",
         "--- DIRECTIVES SPÉCIFIQUES DU PROFIL ---",
         profile.system_rules,
@@ -235,10 +240,10 @@ def build_humanize_prompt(
         [
             CORE_HUMANIZER_GUIDELINES,
             "",
-            "--- TEXTE SOURCE À HUMANISER (SUPPRIMER LE BAVARDAGE, ALLER DROIT AU FAIT JURIDIQUE) ---",
+            "--- TEXTE SOURCE À HUMANISER (SUPPRIMER LE BAVARDAGE, ALLER DROIT AUX FAITS ET À L'EXÉCUTION, CONSERVER LA LANGUE SOURCE) ---",
             input_text.strip(),
             "",
-            "--- TEXTE FINAL HUMANISÉ (Restituer UNIQUEMENT le texte final de praticien, sans préambule, sans formules de politesse IA, sans emojis) ---",
+            "--- TEXTE FINAL HUMANISÉ (Restituer UNIQUEMENT le texte final de praticien dans la langue du texte source, sans préambule, sans formules de politesse IA, sans emojis) ---",
         ]
     )
 

@@ -66,3 +66,21 @@ class TestProfiles:
         assert "Delivery technique" in prompt
         assert "Cadrage métier" in prompt
         assert "BigQuery avec vues matérialisées via dbt" in prompt
+
+    def test_english_source_language_preservation_and_cliches(self):
+        from core.score_stylometry import analyze_stylometry
+
+        en_text = (
+            "I am thrilled to apply for this Staff Engineer role, which sits at the intersection of "
+            "data and AI and aligns perfectly with my background. I leveraged my expertise to ship "
+            "cutting-edge solutions and seamlessly integrate Python pipelines. "
+            "Thank you for your time and consideration."
+        )
+        prompt = build_humanize_prompt(input_text=en_text, profile_id="architecte")
+        assert "CONSERVATION STRICTE DE LA LANGUE DU TEXTE SOURCE" in prompt
+        assert "thrilled to apply" in prompt
+        assert "at the intersection of" in prompt
+
+        stylo = analyze_stylometry(en_text)
+        assert stylo.ai_phrase_count >= 5
+        assert stylo.composite_score > 0.45

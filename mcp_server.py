@@ -48,6 +48,7 @@ def humanize_text_tool(
         return {"success": True, "humanized_text": "", "transport": "noop"}
 
     api_url = os.environ.get("AI_REMOVER_API_URL", "").strip().rstrip("/")
+    api_token = os.environ.get("AI_REMOVER_API_TOKEN", "").strip()
     api_key = (
         os.environ.get("AI_REMOVER_API_KEY", "").strip()
         or os.environ.get("GEMINI_API_KEY", "").strip()
@@ -55,6 +56,8 @@ def humanize_text_tool(
 
     if api_url:
         headers: dict[str, str] = {"Content-Type": "application/json"}
+        if api_token:
+            headers["Authorization"] = f"Bearer {api_token}"
         if api_key:
             headers["X-Gemini-API-Key"] = api_key
         try:

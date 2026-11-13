@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import os
+import secrets
 import sys
 import time
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -25,11 +26,45 @@ from core.text_unicode import clean_unicode, inspect_unicode
 app = FastAPI(
     title="AI-Remover Hybrid API",
     description=(
-        "API interne (Antigravity CLI local) et externe (Google Cloud Run via en-tete "
-        "X-Gemini-API-Key ou variable GEMINI_API_KEY)."
+        "API interne (Antigravity CLI local) et externe (Google Cloud Run via jeton "
+        "Bearer optionnel et en-tete X-Gemini-API-Key)."
     ),
-    version="1.1.0",
+    version="1.2.0",
 )
+
+
+def verify_bearer_token(
+    authorization: Annotated[str | None, Header(alias="Authorization")] = None,
+) -> None:
+    """Verifie le jeton Authorization: Bearer si AI_REMOVER_API_TOKEN est defini."""
+    expected_token = os.environ.get("AI_REMOVER_API_TOKEN", "").strip()
+    if not expected_token:
+        return
+
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail="En-tete Authorization Bearer requis.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    scheme, _, credentials = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not credentials.strip():
+        raise HTTPException(
+            status_code=401,
+            detail="Format Authorization invalide. Attendu: Bearer <token>.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not secrets.compare_digest(credentials.strip(), expected_token):
+        raise HTTPException(
+            status_code=401,
+            detail="Jeton Bearer invalide.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+api_v1 = APIRouter(dependencies=[Depends(verify_bearer_token)])
 
 
 class TextOnlyRequest(BaseModel):
@@ -55,16 +90,18 @@ class EvaluateRequest(BaseModel):
 def health_check() -> dict[str, Any]:
     agy_ok = is_agy_available()
     has_env_key = bool(os.environ.get("GEMINI_API_KEY", "").strip())
+    auth_enabled = bool(os.environ.get("AI_REMOVER_API_TOKEN", "").strip())
     return {
         "status": "ok",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "agy_available": agy_ok,
         "cloud_env_key_configured": has_env_key,
+        "bearer_auth_enabled": auth_enabled,
         "default_engine": "agy" if agy_ok else "BYOK",
     }
 
 
-@app.get("/api/v1/profiles")
+@api_v1.get("/api/v1/profiles")
 def list_profiles() -> dict[str, Any]:
     return {
         "profiles": [
@@ -78,7 +115,7 @@ def list_profiles() -> dict[str, Any]:
     }
 
 
-@app.get("/api/v1/models")
+@api_v1.get("/api/v1/models")
 def list_models() -> dict[str, Any]:
     models = get_available_agy_models()
     return {
@@ -87,7 +124,7 @@ def list_models() -> dict[str, Any]:
     }
 
 
-@app.post("/api/v1/clean-unicode")
+@api_v1.post("/api/v1/clean-unicode")
 def clean_unicode_endpoint(req: TextOnlyRequest) -> dict[str, Any]:
     cleaned, stats = clean_unicode(req.text, normalize_spaces=True)
     return {
@@ -96,7 +133,7 @@ def clean_unicode_endpoint(req: TextOnlyRequest) -> dict[str, Any]:
     }
 
 
-@app.post("/api/v1/analyze")
+@api_v1.post("/api/v1/analyze")
 def analyze_endpoint(req: TextOnlyRequest) -> dict[str, Any]:
     stylo = analyze_stylometry(req.text)
     uni = inspect_unicode(req.text)
@@ -115,7 +152,7 @@ def analyze_endpoint(req: TextOnlyRequest) -> dict[str, Any]:
     }
 
 
-@app.post("/api/v1/humanize")
+@api_v1.post("/api/v1/humanize")
 def humanize_endpoint(
     req: HumanizeRequest,
     x_gemini_api_key: Annotated[str | None, Header(alias="X-Gemini-API-Key")] = None,
@@ -191,7 +228,7 @@ def humanize_endpoint(
     }
 
 
-@app.post("/api/v1/evaluate")
+@api_v1.post("/api/v1/evaluate")
 def evaluate_endpoint(req: EvaluateRequest) -> dict[str, Any]:
     res = evaluate_transformation(
         source_text=req.source_text,
@@ -202,6 +239,9 @@ def evaluate_endpoint(req: EvaluateRequest) -> dict[str, Any]:
     return res.to_dict()
 
 
-@app.get("/api/v1/telemetry/summary")
+@api_v1.get("/api/v1/telemetry/summary")
 def telemetry_summary_endpoint() -> dict[str, Any]:
     return summarize_telemetry()
+
+
+app.include_router(api_v1)

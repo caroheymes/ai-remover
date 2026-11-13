@@ -32,6 +32,7 @@ class TestMcpServer:
         self, mock_post, monkeypatch
     ):
         monkeypatch.setenv("AI_REMOVER_API_URL", "http://127.0.0.1:8506")
+        monkeypatch.setenv("AI_REMOVER_API_TOKEN", "jeton-mcp-test")
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
@@ -51,6 +52,8 @@ class TestMcpServer:
         assert res["success"] is True
         assert res["transport"] == "http_api"
         assert res["humanized_text"] == "Texte traite par API interne."
+        _, kwargs = mock_post.call_args
+        assert kwargs["headers"]["Authorization"] == "Bearer jeton-mcp-test"
 
     def test_analyze_and_clean_tools(self):
         sample = "Bonjour\u200b le monde. Il convient de souligner ce point."
