@@ -132,7 +132,7 @@ def split_text_into_chunks(text: str, max_chunk_size: int = 2500) -> list[str]:
         if len(c) <= max_chunk_size:
             final_chunks.append(c)
         else:
-            lines = [l for l in c.split("\n") if l.strip()]
+            lines = [raw_line for raw_line in c.split("\n") if raw_line.strip()]
             if len(lines) > 1:
                 sub_c: list[str] = []
                 sub_len = 0

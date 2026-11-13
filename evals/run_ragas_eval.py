@@ -13,8 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from core.ai_bridge import humanize_text
-from core.evaluator import (
+from core.ai_bridge import humanize_text  # noqa: E402
+from core.evaluator import (  # noqa: E402
     compute_ragas_non_llm_metrics,
     evaluate_transformation,
     load_golden_dataset,

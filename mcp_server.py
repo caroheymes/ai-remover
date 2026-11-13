@@ -9,6 +9,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import requests
+from fastmcp import FastMCP
+
 if hasattr(sys.stdin, "reconfigure"):
     sys.stdin.reconfigure(encoding="utf-8")
 if hasattr(sys.stdout, "reconfigure"):
@@ -27,12 +30,9 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-import requests
-from fastmcp import FastMCP
-
-from core.ai_bridge import humanize_text, is_agy_available
-from core.score_stylometry import analyze_stylometry
-from core.text_unicode import clean_unicode, inspect_unicode
+from core.ai_bridge import humanize_text, is_agy_available  # noqa: E402
+from core.score_stylometry import analyze_stylometry  # noqa: E402
+from core.text_unicode import clean_unicode, inspect_unicode  # noqa: E402
 
 mcp = FastMCP("ai-remover")
 

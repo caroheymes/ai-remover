@@ -16,12 +16,16 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from core.ai_bridge import get_available_agy_models, humanize_text, is_agy_available
-from core.evaluator import evaluate_transformation
-from core.profiles import PROFILES
-from core.score_stylometry import analyze_stylometry
-from core.telemetry import summarize_telemetry
-from core.text_unicode import clean_unicode, inspect_unicode
+from core.ai_bridge import (  # noqa: E402
+    get_available_agy_models,
+    humanize_text,
+    is_agy_available,
+)
+from core.evaluator import evaluate_transformation  # noqa: E402
+from core.profiles import PROFILES  # noqa: E402
+from core.score_stylometry import analyze_stylometry  # noqa: E402
+from core.telemetry import summarize_telemetry  # noqa: E402
+from core.text_unicode import clean_unicode, inspect_unicode  # noqa: E402
 
 app = FastAPI(
     title="AI-Remover Hybrid API",

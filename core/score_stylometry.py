@@ -391,7 +391,7 @@ def analyze_stylometry(text: str) -> StylometryReport:
         report.avg_sentence_len = sum(lens) / len(lens)
         if len(lens) > 1:
             mean = report.avg_sentence_len
-            variance = sum((l - mean) ** 2 for l in lens) / len(lens)
+            variance = sum((sent_len - mean) ** 2 for sent_len in lens) / len(lens)
             std_dev = math.sqrt(variance)
             report.burstiness = std_dev / mean if mean > 0 else 0.0
         else:

@@ -17,9 +17,13 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from core.ai_bridge import get_available_agy_models, humanize_text, is_agy_available
-from core.evaluator import evaluate_transformation, load_golden_dataset
-from core.file_processor import (
+from core.ai_bridge import (  # noqa: E402
+    get_available_agy_models,
+    humanize_text,
+    is_agy_available,
+)
+from core.evaluator import evaluate_transformation, load_golden_dataset  # noqa: E402
+from core.file_processor import (  # noqa: E402
     create_clean_docx,
     create_clean_pdf,
     extract_text_from_file,
@@ -27,15 +31,18 @@ from core.file_processor import (
     generate_diff_report_html,
     strip_image_metadata,
 )
-from core.profiles import PROFILES
-from core.score_stylometry import (
+from core.profiles import PROFILES  # noqa: E402
+from core.score_stylometry import (  # noqa: E402
     EditorialReport,
     analyze_stylometry,
     generate_editorial_report,
 )
-from core.telemetry import load_recent_telemetry_events, summarize_telemetry
-from core.text_unicode import clean_unicode, inspect_unicode
-from evals.run_ragas_eval import run_benchmark
+from core.telemetry import (  # noqa: E402
+    load_recent_telemetry_events,
+    summarize_telemetry,
+)
+from core.text_unicode import clean_unicode, inspect_unicode  # noqa: E402
+from evals.run_ragas_eval import run_benchmark  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Configuration de la page Streamlit
