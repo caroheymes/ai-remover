@@ -1,0 +1,78 @@
+{
+  "version": "1.0.0",
+  "description": "Golden Dataset de reference LLMOps et Ragas pour l'evaluation de retention factuelle, d'eradication des cliches IA et d'hygiene Unicode.",
+  "cases": [
+    {
+      "id": "arch_01_interflora_mlops",
+      "profile_id": "architecte",
+      "source_text": "Cette opportunité à la croisée de la data science et du MLOps correspond parfaitement à mon parcours. Fort de mon expérience chez Interflora, j'ai mis à profit mes compétences pour concevoir des solutions innovantes en déployant sous AWS SageMaker un modèle Prophet atteignant un MAPE de 15 %, tout en générant 500 kEUR d'économies sur le maillage géospatial sous Python, Uber H3 et BigQuery. Je reste à votre entière disposition pour relever vos défis technologiques.",
+      "reference_human_text": "Chez Interflora, j'ai mis en production sous AWS SageMaker un modèle prédictif Prophet atteignant un MAPE de 15 % pour calibrer le dimensionnement opérationnel. Sur le périmètre géospatial, j'ai optimisé le maillage territorial sous Python, Uber H3 et BigQuery, générant 500 kEUR d'économies mesurées.",
+      "required_facts": ["Interflora", "AWS SageMaker", "Prophet", "15 %", "500 kEUR", "Python", "Uber H3", "BigQuery"],
+      "forbidden_cliches": ["à la croisée de", "correspond parfaitement", "fort de mon expérience", "mettre à profit mes compétences", "solutions innovantes", "relever vos défis", "entière disposition"]
+    },
+    {
+      "id": "arch_02_itg_multi_agents_rag",
+      "profile_id": "architecte",
+      "source_text": "Dans un paysage technologique en constante évolution, mon poste chez ITG Consultants s'inscrit dans la continuité de mon parcours. Il convient de souligner que j'y ai développé en synergie avec les équipes une architecture multi-agents sous Python 3.12 combinant LangGraph, CrewAI et MCP, ainsi qu'un pipeline RAG documentaire appuyé sur MinerU et ChromaDB évalué avec Ragas.",
+      "reference_human_text": "Chez ITG Consultants, j'ai conçu et livré une architecture multi-agents sous Python 3.12 articulant LangGraph, CrewAI et MCP. J'ai également bâti un pipeline RAG d'extraction documentaire sur MinerU et ChromaDB, instrumenté et évalué avec Ragas.",
+      "required_facts": ["ITG Consultants", "Python 3.12", "LangGraph", "CrewAI", "MCP", "RAG", "MinerU", "ChromaDB", "Ragas"],
+      "forbidden_cliches": ["paysage technologique", "en constante évolution", "s'inscrit dans la continuité", "il convient de souligner", "en synergie"]
+    },
+    {
+      "id": "arch_03_cnil_serverless_pipeline",
+      "profile_id": "architecte",
+      "source_text": "Passionnée par la gouvernance des données et véritable force de proposition, j'ai joué un rôle crucial auprès du DPO d'Interflora à Lyon. Non seulement j'ai orchestré un pipeline serverless sous AWS Lambda et API Gateway, mais j'ai aussi évalué LLaMA et OpenAI pour extraire les sanctions de la CNIL vers BigQuery et Streamlit.",
+      "reference_human_text": "Pour le DPO d'Interflora à Lyon, j'ai développé et opéré un pipeline serverless sous AWS Lambda et API Gateway qui ingère les délibérations de la CNIL, compare l'extraction d'entités entre LLaMA et OpenAI, centralise les résultats dans BigQuery et les expose sous Streamlit.",
+      "required_facts": ["DPO", "Interflora", "Lyon", "AWS Lambda", "API Gateway", "LLaMA", "OpenAI", "CNIL", "BigQuery", "Streamlit"],
+      "forbidden_cliches": ["passionnée par", "force de proposition", "joué un rôle crucial", "non seulement"]
+    },
+    {
+      "id": "arch_04_nlp_scraping_4_pays",
+      "profile_id": "architecte",
+      "source_text": "À l'ère de l'intelligence artificielle, il est essentiel de noter que la qualité des données constitue la pierre angulaire de la performance. J'ai ainsi déployé un classifieur actif SetFit (F1 > 0.85) couplé à BERTopic, ainsi qu'une infrastructure de scraping distribuée sur 4 pays sous Scrapy, Playwright et GraphQL.",
+      "reference_human_text": "Sur le volet NLP, j'ai mis en production un pipeline BERTopic et un classifieur multi-label par active-learning sous SetFit atteignant un F1 > 0.85 par classe. En parallèle, j'ai conçu une plateforme de scraping distribuée couvrant 4 pays sous Scrapy, Playwright et GraphQL.",
+      "required_facts": ["SetFit", "0.85", "BERTopic", "4 pays", "Scrapy", "Playwright", "GraphQL"],
+      "forbidden_cliches": ["à l'ère de l'intelligence artificielle", "il est essentiel de noter", "pierre angulaire"]
+    },
+    {
+      "id": "arch_05_gl_events_michelin_ltv",
+      "profile_id": "architecte",
+      "source_text": "Forte de mon parcours au carrefour de la stratégie internationale et de la data, j'ai accompagné GL events avec un moteur de scraping traitant 10M+ pages par an pour 200+ études M&A, avant de modéliser la LTV chez Qonto et de cartographier 5 000 mots-clés sur 5 marchés pour Michelin sous scikit-learn. N'hésitez pas à revenir vers moi.",
+      "reference_human_text": "Chez GL events, j'ai bâti le moteur interne de collecte distribuée traitant 10M+ pages par an pour alimenter 200+ études M&A et commerciales. J'ai ensuite modélisé la LTV client pour Qonto et cartographié 5 000 mots-clés sur 5 marchés pour Michelin sous scikit-learn.",
+      "required_facts": ["GL events", "10M+", "200+", "M&A", "LTV", "Qonto", "5 000", "5 marchés", "Michelin", "scikit-learn"],
+      "forbidden_cliches": ["forte de mon parcours", "au carrefour de", "n'hésitez pas"]
+    },
+    {
+      "id": "law_01_clause_non_concurrence",
+      "profile_id": "avocat",
+      "source_text": "Comme il a été souligné supra, la problématique de la validité de la clause de non-concurrence revêt un caractère fondamental dans le cadre du présent litige. Il convient, à cet égard, de rappeler que la jurisprudence exige depuis le 10 juillet 2002 (Cass. soc., n° 00-45.135) une contrepartie financière. Force est de constater que cette condition fait défaut avant l'expiration du préavis. Je reste à votre entière disposition.",
+      "reference_human_text": "La clause de non-concurrence est nulle faute de contrepartie financière, condition exigée par la chambre sociale depuis le 10 juillet 2002 (Cass. soc., n° 00-45.135). Cette nullité protectrice permet à votre salarié soit d'invoquer l'inopposabilité de l'interdiction, soit de solliciter réparation avant l'expiration du préavis.",
+      "required_facts": ["clause de non-concurrence", "10 juillet 2002", "00-45.135", "contrepartie financière", "préavis"],
+      "forbidden_cliches": ["revêt un caractère fondamental", "il convient, à cet égard, de rappeler", "force est de constater", "entière disposition"]
+    },
+    {
+      "id": "law_02_rupture_brutale_l442_1",
+      "profile_id": "avocat",
+      "source_text": "Il est fondamental de mentionner que la cessation d'une relation commerciale établie depuis 12 ans soulève des enjeux majeurs au regard de l'article L. 442-1, II du Code de commerce. Non seulement le préavis accordé de 2 mois apparaît manifestement insuffisant au vu d'un chiffre d'affaires annuel de 1,4 million d'euros, mais cela témoigne de l'importance d'engager la responsabilité délictuelle de l'auteur.",
+      "reference_human_text": "L'interruption d'une relation commerciale suivie pendant 12 ans avec seulement 2 mois de préavis engage la responsabilité délictuelle du donneur d'ordre sur le fondement de l'article L. 442-1, II du Code de commerce, compte tenu d'un flux annuel de 1,4 million d'euros.",
+      "required_facts": ["12 ans", "L. 442-1", "Code de commerce", "2 mois", "1,4 million d'euros"],
+      "forbidden_cliches": ["il est fondamental de mentionner", "non seulement", "témoigne de l'importance"]
+    },
+    {
+      "id": "law_03_rgpd_sous_traitance_art28",
+      "profile_id": "avocat",
+      "source_text": "Dans un environnement numérique complexe, la conformité à l'article 28 du RGPD joue un rôle charnière. Force est de constater que le contrat d'hébergement conclu le 14 mars 2026 omet de fixer le délai de notification des violations à 48 heures et autorise un transfert hors UE sans clauses contractuelles types.",
+      "reference_human_text": "Le contrat d'hébergement signé le 14 mars 2026 viole l'article 28 du RGPD: il omet l'obligation de notifier toute violation de données sous 48 heures et permet un transfert hors UE dépourvu de clauses contractuelles types.",
+      "required_facts": ["article 28", "RGPD", "14 mars 2026", "48 heures", "clauses contractuelles types"],
+      "forbidden_cliches": ["environnement numérique complexe", "joue un rôle charnière", "force est de constater"]
+    },
+    {
+      "id": "ana_01_arbitrage_cloud_finops",
+      "profile_id": "analyste",
+      "source_text": "En conclusion, la migration vers Kubernetes représente un catalyseur de transformation incontournable. Il est crucial de noter que maintenir 14 instances GPU A100 sous-utilisées à 18 % engendre un surcoût mensuel de 42 000 EUR par rapport à une exécution serverless par lots.",
+      "reference_human_text": "Maintenir 14 instances GPU A100 utilisées à 18 % génère un surcoût de 42 000 EUR par mois face à un ordonnancement serverless par lots sur Kubernetes. Le basculement vers des nœuds à la demande réduit immédiatement la facture fixe au prix d'une latence de démarrage à froid de quelques secondes.",
+      "required_facts": ["Kubernetes", "14 instances", "A100", "18 %", "42 000 EUR"],
+      "forbidden_cliches": ["en conclusion", "catalyseur", "il est crucial de noter"]
+    }
+  ]
+}

@@ -6,6 +6,9 @@ pypdf>=5.0.0
 fpdf2>=2.8.0
 pillow>=10.0.0
 playwright>=1.40.0
+fastapi>=0.115.0
+uvicorn>=0.30.0
+fastmcp>=2.0.0
 
 # Outil système optionnel pour le partage distant illimité (partager.bat) :
 # - Windows : winget install Cloudflare.cloudflared

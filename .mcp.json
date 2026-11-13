@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ai-remover": {
+      "type": "stdio",
+      "command": "C:\\Users\\Admin\\.gemini\\legifrance-env\\Scripts\\python.exe",
+      "args": [
+        "C:\\Users\\Admin\\Documents\\HENRI\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1",
+        "AI_REMOVER_API_URL": "http://127.0.0.1:8506"
+      }
+    }
+  }
+}

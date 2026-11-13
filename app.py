@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from core.ai_bridge import humanize_text, is_agy_available
+from core.ai_bridge import get_available_agy_models, humanize_text, is_agy_available
 from core.file_processor import (
     create_clean_docx,
     create_clean_pdf,
@@ -102,6 +102,7 @@ with st.sidebar:
 
     api_key = ""
     gemini_model = "gemini-3-flash-preview"
+    agy_model = "gemini-3.8-flash-low"
     if ai_engine == "Apportez votre propre clé / BYOK (API Google Gemini)":
         st.markdown("#### Clé API Google AI Studio (BYOK)")
         default_env_key = os.environ.get("GEMINI_API_KEY", "")
@@ -117,8 +118,8 @@ with st.sidebar:
         st.markdown(
             """
 <div style="font-size: 0.85rem; color: #475569; margin-top: -6px; margin-bottom: 12px;">
-    👉 <a href="https://aistudio.google.com/apikey" target="_blank" style="text-decoration: underline; color: #4F46E5; font-weight: 600;">Obtenir une clé gratuite sur Google AI Studio</a><br>
-    <span style="color: #16A34A; font-weight: 500;">⚡ Quota gratuit : 15 requêtes/min sans carte bancaire.</span>
+    <a href="https://aistudio.google.com/apikey" target="_blank" style="text-decoration: underline; color: #4F46E5; font-weight: 600;">Obtenir une clé gratuite sur Google AI Studio</a><br>
+    <span style="color: #16A34A; font-weight: 500;">Quota gratuit : 15 requêtes/min sans carte bancaire.</span>
 </div>
 """,
             unsafe_allow_html=True,
@@ -149,19 +150,32 @@ with st.sidebar:
             gemini_model = chosen_model
 
         if api_key.strip():
-            st.success("✅ Clé API configurée (Mode BYOK actif)")
+            st.success("Clé API configurée (Mode BYOK actif)")
         else:
             st.warning(
-                "⚠️ Clé API requise pour la réécriture IA. Les onglets d'inspection Unicode et de stylométrie restent 100 % opérationnels sans clé."
+                "Clé API requise pour la réécriture IA. Les onglets d'inspection Unicode et de stylométrie restent 100 % opérationnels sans clé."
             )
     else:
         if agy_installed:
             st.success(
-                "✅ Connecté au CLI local Antigravity (`agy`). Aucun envoi de clé requis."
+                "Connecté au CLI local Antigravity (`agy`). Aucun envoi de clé requis."
             )
+            agy_models_list = get_available_agy_models()
+            model_ids = [m[0] for m in agy_models_list]
+            model_labels = [m[1] for m in agy_models_list]
+            default_agy_idx = 0
+
+            selected_agy_idx = st.selectbox(
+                "Modèle local Antigravity CLI :",
+                range(len(agy_models_list)),
+                format_func=lambda i: model_labels[i],
+                index=default_agy_idx,
+                help="Sélectionnez un modèle rapide et léger pour éviter tout délai d'attente. Seuls les petits modèles de la famille Flash sont proposés.",
+            )
+            agy_model = model_ids[selected_agy_idx]
         else:
             st.warning(
-                "⚠️ L'exécutable local `agy` n'est pas détecté dans l'environnement courant. Veuillez basculer sur le mode **BYOK (API Gemini)** ou installer Antigravity CLI."
+                "L'exécutable local `agy` n'est pas détecté dans l'environnement courant. Veuillez basculer sur le mode **BYOK (API Gemini)** ou installer Antigravity CLI."
             )
 
     st.markdown("---")
@@ -527,6 +541,8 @@ with tab_text:
                     engine="BYOK" if "BYOK" in ai_engine else "agy",
                     api_key=api_key,
                     gemini_model=gemini_model,
+                    agy_model=agy_model,
+                    source="ui",
                 )
 
                 if not success:
@@ -626,6 +642,8 @@ with tab_doc:
                             engine="BYOK" if "BYOK" in ai_engine else "agy",
                             api_key=api_key,
                             gemini_model=gemini_model,
+                            agy_model=agy_model,
+                            source="ui",
                         )
 
                         if success:

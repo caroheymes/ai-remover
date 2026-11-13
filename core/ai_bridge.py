@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import requests
@@ -34,6 +35,68 @@ def is_agy_available() -> bool:
     if path != "agy":
         return Path(path).is_file()
     return shutil.which("agy") is not None
+
+
+FALLBACK_SMALL_AGY_MODELS: list[tuple[str, str]] = [
+    ("gemini-3.8-flash-low", "Gemini 3.8 Flash (Low) - Petit modèle recommandé"),
+    ("gemini-3.8-flash-medium", "Gemini 3.8 Flash (Medium)"),
+    ("gemini-3.8-flash-high", "Gemini 3.8 Flash (High)"),
+]
+
+
+def get_available_agy_models() -> list[tuple[str, str]]:
+    """Interroge dynamiquement le binaire agy models et extrait exclusivement les petits modèles (famille Flash)."""
+    agy_bin = get_agy_path()
+    try:
+        res = subprocess.run(
+            [agy_bin, "models"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=5,
+            shell=False,
+            stdin=subprocess.DEVNULL,
+            check=False,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            lines = res.stdout.strip().splitlines()
+            small_models: list[tuple[str, str]] = []
+            for line in lines:
+                if "\t" in line:
+                    mid, mlabel = line.split("\t", 1)
+                    mid, mlabel = mid.strip(), mlabel.strip()
+                    mid_lower = mid.lower()
+                    # Filtrage strict : conservation exclusive des modèles Flash légers
+                    if "flash" in mid_lower and not any(
+                        heavy in mid_lower
+                        for heavy in ["carbon", "argon", "sonnet", "opus"]
+                    ):
+                        label = (
+                            f"{mlabel} - Petit modèle recommandé"
+                            if "flash-low" in mid_lower
+                            else mlabel
+                        )
+                        small_models.append((mid, label))
+
+            if small_models:
+
+                def flash_sort_key(item: tuple[str, str]) -> int:
+                    m = item[0].lower()
+                    if "flash-low" in m:
+                        return 0
+                    if "flash-medium" in m:
+                        return 1
+                    if "flash-high" in m:
+                        return 2
+                    return 5
+
+                small_models.sort(key=flash_sort_key)
+                return small_models
+    except (OSError, subprocess.SubprocessError, RuntimeError, ValueError):
+        return list(FALLBACK_SMALL_AGY_MODELS)
+
+    return list(FALLBACK_SMALL_AGY_MODELS)
 
 
 def split_text_into_chunks(text: str, max_chunk_size: int = 2500) -> list[str]:
@@ -132,6 +195,7 @@ def _call_single_agy_turn(
             timeout=timeout_seconds,
             shell=False,
             env=env,
+            stdin=subprocess.DEVNULL,
             check=False,
         )
 
@@ -139,6 +203,32 @@ def _call_single_agy_turn(
             return True, result.stdout.strip()
         else:
             err = result.stderr.strip() or "La commande agy a retourné une sortie vide."
+            # Repli automatique si le modèle spécifié est déprécié ou non reconnu
+            if model and (
+                "model not found" in err.lower() or "unknown model" in err.lower()
+            ):
+                fallback_cmd = [
+                    agy_bin,
+                    "-p",
+                    prompt,
+                    "--dangerously-skip-permissions",
+                    "--disable-slash-commands",
+                ]
+                fb_res = subprocess.run(
+                    fallback_cmd,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=timeout_seconds,
+                    shell=False,
+                    env=env,
+                    stdin=subprocess.DEVNULL,
+                    check=False,
+                )
+                if fb_res.returncode == 0 and fb_res.stdout.strip():
+                    return True, fb_res.stdout.strip()
+
             return False, f"Erreur Antigravity CLI (code {result.returncode}): {err}"
     except subprocess.TimeoutExpired:
         return (
@@ -157,12 +247,15 @@ def _call_single_agy_turn(
 
 
 def call_antigravity_cli(
-    prompt: str, model: str | None = None, timeout_seconds: int = 180
+    prompt: str,
+    model: str | None = "gemini-3.8-flash-low",
+    timeout_seconds: int = 180,
 ) -> tuple[bool, str]:
     """Call local Antigravity CLI (agy -p) safely handling long prompts without WinError 206."""
+    target_model = model or "gemini-3.8-flash-low"
     if len(prompt) <= MAX_SAFE_CLI_PROMPT_LEN:
         return _call_single_agy_turn(
-            prompt, model=model, timeout_seconds=timeout_seconds
+            prompt, model=target_model, timeout_seconds=timeout_seconds
         )
 
     # Long prompt handling: detect structured template sections and chunk the input body
@@ -184,7 +277,7 @@ def call_antigravity_cli(
             for chunk in text_chunks:
                 sub_prompt = f"{prefix}{actual_source_header}\n{chunk}\n\n{suffix}"
                 ok, res = _call_single_agy_turn(
-                    sub_prompt, model=model, timeout_seconds=timeout_seconds
+                    sub_prompt, model=target_model, timeout_seconds=timeout_seconds
                 )
                 if not ok:
                     return False, res
@@ -197,7 +290,7 @@ def call_antigravity_cli(
     results: list[str] = []
     for chunk in chunks:
         ok, res = _call_single_agy_turn(
-            chunk, model=model, timeout_seconds=timeout_seconds
+            chunk, model=target_model, timeout_seconds=timeout_seconds
         )
         if not ok:
             return False, res
@@ -263,15 +356,28 @@ def humanize_text(
     engine: str = "agy",
     api_key: str = "",
     gemini_model: str = "gemini-3-flash-preview",
+    agy_model: str = "gemini-3.8-flash-low",
     max_chunk_size: int = 2500,
+    source: str = "core",
 ) -> tuple[bool, str]:
     """Orchestre l'humanisation complète d'un texte ou document avec découpage par blocs pour garantir 100 % d'exhaustivité et zéro omission."""
     from core.profiles import build_humanize_prompt
+    from core.score_stylometry import analyze_stylometry
+    from core.telemetry import TelemetryEvent, log_telemetry_event
     from core.text_unicode import clean_unicode, normalize_human_punctuation
 
-    clean_in, _ = clean_unicode(input_text, normalize_spaces=True)
+    t0 = time.perf_counter()
+    clean_in, u_stats = clean_unicode(input_text, normalize_spaces=True)
     if not clean_in.strip():
         return True, ""
+
+    is_byok = "BYOK" in engine or "gemini" in engine.lower()
+    active_engine = "BYOK" if is_byok else "agy"
+    active_model = gemini_model if is_byok else agy_model
+    score_before = analyze_stylometry(input_text).composite_score
+    unicode_cleaned = int(u_stats.get("removed_count", 0)) + int(
+        u_stats.get("replaced_count", 0)
+    )
 
     chunks = split_text_into_chunks(clean_in, max_chunk_size=max_chunk_size)
     results: list[str] = []
@@ -283,18 +389,53 @@ def humanize_text(
             custom_sample=custom_sample,
         )
 
-        if "BYOK" in engine or "gemini" in engine.lower():
+        if is_byok:
             ok, out = call_gemini_api(
                 prompt=prompt, api_key=api_key, model=gemini_model
             )
         else:
-            ok, out = call_antigravity_cli(prompt=prompt)
+            ok, out = call_antigravity_cli(prompt=prompt, model=agy_model)
 
         if not ok:
+            latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+            log_telemetry_event(
+                TelemetryEvent(
+                    source=source,
+                    engine=active_engine,
+                    model=active_model,
+                    profile_id=profile_id,
+                    latency_ms=latency_ms,
+                    success=False,
+                    chars_in=len(input_text),
+                    chars_out=0,
+                    score_before=score_before,
+                    score_after=score_before,
+                    unicode_cleaned_count=unicode_cleaned,
+                    error=out,
+                )
+            )
             return False, out
 
         clean_out, _ = clean_unicode(out, normalize_spaces=True)
         clean_out = normalize_human_punctuation(clean_out)
         results.append(clean_out.strip())
 
-    return True, "\n\n".join(results)
+    final_text = "\n\n".join(results)
+    latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+    score_after = analyze_stylometry(final_text).composite_score
+    log_telemetry_event(
+        TelemetryEvent(
+            source=source,
+            engine=active_engine,
+            model=active_model,
+            profile_id=profile_id,
+            latency_ms=latency_ms,
+            success=True,
+            chars_in=len(input_text),
+            chars_out=len(final_text),
+            score_before=score_before,
+            score_after=score_after,
+            unicode_cleaned_count=unicode_cleaned,
+        )
+    )
+    return True, final_text

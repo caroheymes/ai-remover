@@ -180,3 +180,57 @@ class TestAiBridge:
         )
         assert ok is True
         assert res == "Voici les faits: \"l'outil\" est prêt! Qu'en pensez-vous?"
+
+    @patch("subprocess.run")
+    def test_get_available_agy_models_filtering(self, mock_run):
+        from core.ai_bridge import get_available_agy_models
+
+        mock_proc = MagicMock()
+        mock_proc.returncode = 0
+        mock_proc.stdout = (
+            "gemini-4-carbon-high\tGemini 4 Carbon (High)\n"
+            "claude-opus-5-5-high\tClaude Opus 5.5 (High)\n"
+            "gemini-3.8-flash-medium\tGemini 3.8 Flash (Medium)\n"
+            "gemini-3.8-flash-low\tGemini 3.8 Flash (Low)\n"
+            "claude-sonnet-5-5-low\tClaude Sonnet 5.5 (Low)\n"
+        )
+        mock_run.return_value = mock_proc
+
+        models = get_available_agy_models()
+        model_ids = [m[0] for m in models]
+
+        assert "gemini-3.8-flash-low" in model_ids
+        assert "gemini-3.8-flash-medium" in model_ids
+        # Exclusion stricte des modèles lourds
+        assert "gemini-4-carbon-high" not in model_ids
+        assert "claude-opus-5-5-high" not in model_ids
+        assert "claude-sonnet-5-5-low" not in model_ids
+        # Flash low doit être en première position (recommandé par défaut)
+        assert models[0][0] == "gemini-3.8-flash-low"
+
+    @patch("subprocess.run")
+    def test_get_available_agy_models_fallback(self, mock_run):
+        from core.ai_bridge import get_available_agy_models
+
+        mock_run.side_effect = RuntimeError("Binaire indisponible")
+        models = get_available_agy_models()
+        assert len(models) >= 1
+        assert models[0][0] == "gemini-3.8-flash-low"
+
+    @patch("subprocess.run")
+    def test_call_antigravity_cli_fallback_on_unknown_model(self, mock_run):
+        # Premier appel avec un modèle inconnu qui échoue, second appel de repli sans --model qui réussit
+        fail_proc = MagicMock()
+        fail_proc.returncode = 1
+        fail_proc.stdout = ""
+        fail_proc.stderr = "Error: unknown model deprecated-model"
+
+        ok_proc = MagicMock()
+        ok_proc.returncode = 0
+        ok_proc.stdout = "Humanisation réussie via repli."
+        ok_proc.stderr = ""
+
+        mock_run.side_effect = [fail_proc, ok_proc]
+        success, result = call_antigravity_cli("Prompt", model="deprecated-model")
+        assert success is True
+        assert result == "Humanisation réussie via repli."
