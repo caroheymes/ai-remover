@@ -56,3 +56,6 @@ jobs:
 
       - name: Run Pytest Suite
         run: pytest -v
+
+      - name: Run LLMOps Golden Dataset Gate (FR/EN)
+        run: python evals/run_ragas_eval.py

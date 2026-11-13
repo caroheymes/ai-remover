@@ -25,7 +25,12 @@ from core.score_stylometry import (
     generate_audit_log_markdown,
     generate_editorial_report,
 )
-from core.telemetry import TelemetryEvent, log_telemetry_event, summarize_telemetry
+from core.telemetry import (
+    TelemetryEvent,
+    load_recent_telemetry_events,
+    log_telemetry_event,
+    summarize_telemetry,
+)
 from core.text_unicode import clean_unicode, inspect_unicode
 
 __all__ = [
@@ -50,6 +55,7 @@ __all__ = [
     "is_agy_available",
     "is_playwright_available",
     "load_golden_dataset",
+    "load_recent_telemetry_events",
     "log_telemetry_event",
     "strip_image_metadata",
     "summarize_telemetry",

@@ -40,7 +40,7 @@ Le serveur `mcp_server.py` expose trois outils sur le protocole MCP (`stdio`): `
 | `core/telemetry.py` | Créé | Journalisation structurée JSONL (`logs/telemetry.jsonl`) et calcul des centiles de latence (`p50`, `p95`), taux de succès et baisse de score IA. |
 | `core/evaluator.py` | Créé | Évaluation déterministe (rétention factuelle, éradication des tics IA, hygiène Unicode) et métriques Ragas hors-LLM (`NonLLMStringSimilarity`, `RougeScore`, repli lexical F1). |
 | `core/__init__.py` | Modifié | Export public des fonctions de modèles `agy`, de télémétrie et d'évaluation. |
-| `app.py` | Modifié | Ajout du menu déroulant des petits modèles locaux `agy` et passage de `source="ui"` à la télémétrie. |
+| `app.py` | Modifié | Ajout du menu déroulant des petits modèles locaux `agy`, passage de `source="ui"` et ajout du 5e onglet "Observabilité LLMOps" (latences `p50`/`p95` par modèle, canaux et banc Golden Dataset FR/EN en 1 clic). |
 | `api.py` | Créé | Serveur REST FastAPI hybride v1.2.0 (local `agy`, Cloud Run via `X-Gemini-API-Key` et verrouillage `Authorization: Bearer` via `AI_REMOVER_API_TOKEN`) sur le port `8506`. |
 | `mcp_server.py` | Créé | Serveur FastMCP (`stdio`) exposant `humanize_text`, `analyze_ai_density` et `clean_invisible_unicode` avec support Bearer et repli automatique API vers coeur Python. |
 | `.mcp.json` | Créé | Configuration MCP locale du dépôt `HENRI`. |
@@ -51,7 +51,8 @@ Le serveur `mcp_server.py` expose trois outils sur le protocole MCP (`stdio`): `
 | `evals/golden_dataset.json` | Créé | Jeu d'étalonnage bilingue v1.1.0 de 14 cas métiers réalistes (9 FR + 5 EN sur `architecte`, `avocat`, `analyste`) avec entités critiques et expressions interdites. |
 | `evals/run_ragas_eval.py` | Créé | Harnais CLI d'exécution des évaluations hors-ligne et en conditions réelles (`--live`), générant `logs/eval_report.json`. |
 | `docs/GUIDE_API_MCP_LLMOPS.md` | Créé | Documentation technique complète (architecture, API REST, Cloud Run, MCP, `career-ops` et LLMOps). |
-| `README.md` | Modifié | Référencement de l'architecture hybride, des outils MCP, de la suite d'évaluation et du guide technique. |
+| `README.md` | Modifié | Mise à jour intégrale avec l'architecture v1.2.0, les 5 onglets Streamlit, l'authentification Bearer Cloud Run, le MCP et la gouvernance LLMOps bilingue. |
+| `.github/workflows/ci.yml` | Modifié | Ajout de la porte de non-régression Golden Dataset (`python evals/run_ragas_eval.py`) sur la matrice Ubuntu et Windows (Python 3.10 à 3.12). |
 | `requirements.txt` / `requirements-dev.txt` | Modifiés | Ajout de `fastapi`, `uvicorn`, `fastmcp` et `httpx`. |
 | `tests/conftest.py` | Créé | Isolation automatique du fichier de télémétrie vers `tmp_path` pendant les tests unitaires. |
 | `tests/test_*.py` | Créés / Modifiés | Couverture complète (`test_api.py`, `test_mcp_server.py`, `test_evaluator.py`, `test_telemetry.py`, `test_ai_bridge.py`, `test_profiles.py`), soit 71 tests passants. |

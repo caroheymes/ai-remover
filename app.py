@@ -4,6 +4,7 @@ Dé-ia-isation de texte, nettoyage Unicode, stylométrie et profils de style mé
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -17,6 +18,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from core.ai_bridge import get_available_agy_models, humanize_text, is_agy_available
+from core.evaluator import evaluate_transformation, load_golden_dataset
 from core.file_processor import (
     create_clean_docx,
     create_clean_pdf,
@@ -31,7 +33,9 @@ from core.score_stylometry import (
     analyze_stylometry,
     generate_editorial_report,
 )
+from core.telemetry import load_recent_telemetry_events, summarize_telemetry
 from core.text_unicode import clean_unicode, inspect_unicode
+from evals.run_ragas_eval import run_benchmark
 
 # ---------------------------------------------------------------------------
 # Configuration de la page Streamlit
@@ -428,12 +432,13 @@ def render_editorial_and_stylometry_report(
 # ---------------------------------------------------------------------------
 # Onglets de navigation
 # ---------------------------------------------------------------------------
-tab_text, tab_doc, tab_voice, tab_guide = st.tabs(
+tab_text, tab_doc, tab_voice, tab_guide, tab_llmops = st.tabs(
     [
         "Texte instantané",
         "Documents et médias",
         "Voix personnalisée",
         "Guide des règles de style",
+        "Observabilité LLMOps",
     ]
 )
 
@@ -784,6 +789,271 @@ with tab_guide:
         17. **Pas d'emojis décoratifs dans les titres ou le corps du texte**.
         18. **Suppression totale des résidus de conversation** (*« J'espère que cela aide », « Excellente question »*).
         """)
+
+
+# ---------------------------------------------------------------------------
+# Onglet 5 : Observabilité LLMOps, télémétrie du Harness et Golden Dataset
+# ---------------------------------------------------------------------------
+with tab_llmops:
+    st.markdown("### Santé opérationnelle du Harness et portes qualité Ragas")
+    st.caption(
+        "Supervision en direct des appels (UI, API FastAPI, MCP career-ops/Claude Code) depuis logs/telemetry.jsonl et contrôle de non-régression sur les 14 cas FR/EN du Golden Dataset."
+    )
+
+    telem = summarize_telemetry()
+    recent_events = load_recent_telemetry_events(limit=15)
+
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        sr_pct = round(float(telem["success_rate"]) * 100.0, 1)
+        st.metric(
+            "Taux de succès global",
+            f"{sr_pct} %",
+            delta=f"{telem['total_calls']} appel(s) tracé(s)",
+            delta_color="off",
+            help="Proportion d'appels terminés sans erreur ni dépassement de délai.",
+        )
+    with k2:
+        st.metric(
+            "Latence médiane (p50)",
+            f"{telem['p50_latency_ms']:.0f} ms",
+            delta=f"p95: {telem['p95_latency_ms']:.0f} ms",
+            delta_color="off",
+            help="Temps de réponse médian (p50) et centile 95 (p95) de bout en bout.",
+        )
+    with k3:
+        st.metric(
+            "Dépassements de délai (180s)",
+            f"{telem['timeout_count']}",
+            delta="Nominal (0)" if telem["timeout_count"] == 0 else "Alerte latence",
+            delta_color="normal" if telem["timeout_count"] == 0 else "inverse",
+            help="Nombre d'exécutions interrompues par la barrière de sécurité de 180 secondes.",
+        )
+    with k4:
+        st.metric(
+            "Gain stylométrique moyen",
+            f"-{telem['avg_score_drop']:.2f}",
+            delta="Baisse d'indice IA",
+            delta_color="off",
+            help="Réduction moyenne du score composite de densité IA entre l'entrée et la sortie.",
+        )
+
+    st.markdown("---")
+    col_perf_left, col_perf_right = st.columns([2, 1])
+
+    with col_perf_left:
+        st.markdown("#### Performance par modèle")
+        if telem.get("model_stats"):
+            st.dataframe(
+                telem["model_stats"],
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "model": "Modèle",
+                    "calls": "Appels",
+                    "success_rate_pct": "Succès (%)",
+                    "p50_ms": "p50 (ms)",
+                    "p95_ms": "p95 (ms)",
+                    "avg_score_drop": "Baisse score IA",
+                },
+            )
+        else:
+            st.info(
+                "Aucune exécution journalisée pour l'instant dans logs/telemetry.jsonl."
+            )
+
+    with col_perf_right:
+        st.markdown("#### Volume par canal")
+        if telem.get("by_source"):
+            source_rows = [
+                {"canal": src, "appels": cnt}
+                for src, cnt in sorted(
+                    telem["by_source"].items(), key=lambda item: item[1], reverse=True
+                )
+            ]
+            st.dataframe(
+                source_rows,
+                use_container_width=True,
+                hide_index=True,
+                column_config={"canal": "Canal d'entrée", "appels": "Appels"},
+            )
+        else:
+            st.caption("Aucun flux enregistré (ui, api, mcp, eval).")
+
+    if recent_events:
+        with st.expander(
+            "Dernières exécutions tracées (15 plus récentes)", expanded=False
+        ):
+            compact_rows = [
+                {
+                    "horodatage": str(r.get("timestamp", ""))[:19].replace("T", " "),
+                    "canal": r.get("source", ""),
+                    "moteur": r.get("engine", ""),
+                    "modele": r.get("model", ""),
+                    "profil": r.get("profile_id", ""),
+                    "latence_ms": round(float(r.get("latency_ms", 0.0)), 0),
+                    "score_avant": r.get("score_before", 0.0),
+                    "score_apres": r.get("score_after", 0.0),
+                    "statut": "OK" if r.get("success") else f"Erreur: {r.get('error')}",
+                }
+                for r in recent_events
+            ]
+            st.dataframe(compact_rows, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.markdown("#### Banc de non-régression Golden Dataset et Ragas (FR / EN)")
+
+    eval_col1, eval_col2, _ = st.columns([1.8, 2.2, 2])
+    with eval_col1:
+        run_offline_eval = st.button(
+            "Vérifier les 14 références (hors-ligne)",
+            use_container_width=True,
+            key="btn_eval_offline",
+        )
+    with eval_col2:
+        run_live_sample = st.button(
+            "Tester 2 cas réels (1 FR + 1 EN) sur le moteur actif",
+            type="primary",
+            use_container_width=True,
+            key="btn_eval_live_bilingual",
+        )
+
+    eval_report_path = BASE_DIR / "logs" / "eval_report.json"
+
+    if run_offline_eval:
+        run_benchmark(live_llm=False)
+        st.toast("Validation hors-ligne des 14 cas terminée.")
+
+    if run_live_sample:
+        active_engine = "BYOK" if "BYOK" in ai_engine else "agy"
+        active_model = gemini_model if active_engine == "BYOK" else agy_model
+        with st.spinner(f"Évaluation réelle FR + EN en cours sur {active_model}..."):
+            all_cases = load_golden_dataset()
+            fr_case = next(
+                (c for c in all_cases if c.get("lang") != "en"), all_cases[0]
+            )
+            en_case = next(
+                (c for c in all_cases if c.get("lang") == "en"), all_cases[-1]
+            )
+            live_rows = []
+            for sample_case in (fr_case, en_case):
+                ok_live, cand_live = humanize_text(
+                    input_text=sample_case["source_text"],
+                    profile_id=sample_case["profile_id"],
+                    engine=active_engine,
+                    api_key=api_key,
+                    gemini_model=gemini_model,
+                    agy_model=agy_model,
+                    source="eval",
+                )
+                if ok_live:
+                    ev_res = evaluate_transformation(
+                        source_text=sample_case["source_text"],
+                        output_text=cand_live,
+                        required_facts=sample_case["required_facts"],
+                        forbidden_cliches=sample_case["forbidden_cliches"],
+                    )
+                    live_rows.append(
+                        {
+                            "id": sample_case["id"],
+                            "profile_id": sample_case["profile_id"],
+                            **ev_res.to_dict(),
+                        }
+                    )
+                else:
+                    live_rows.append(
+                        {
+                            "id": sample_case["id"],
+                            "profile_id": sample_case["profile_id"],
+                            "passed": False,
+                            "factual_retention": 0.0,
+                            "cliche_eradication": 0.0,
+                            "unicode_hygiene": 0.0,
+                            "score_before": 0.0,
+                            "score_after": 0.0,
+                            "stylometry_drop": 0.0,
+                            "missing_facts": [cand_live],
+                            "detected_cliches": [],
+                        }
+                    )
+            passed_live = sum(1 for r in live_rows if r.get("passed"))
+            live_summary = {
+                "timestamp": "live_ui",
+                "mode": "live_llm_bilingual_smoke",
+                "engine": active_engine,
+                "model": active_model,
+                "total_cases": len(live_rows),
+                "passed_cases": passed_live,
+                "pass_rate": round(passed_live / len(live_rows), 4),
+                "avg_factual_retention": round(
+                    sum(float(r["factual_retention"]) for r in live_rows)
+                    / len(live_rows),
+                    4,
+                ),
+                "avg_cliche_eradication": round(
+                    sum(float(r["cliche_eradication"]) for r in live_rows)
+                    / len(live_rows),
+                    4,
+                ),
+                "avg_stylometry_drop": round(
+                    sum(float(r["stylometry_drop"]) for r in live_rows)
+                    / len(live_rows),
+                    4,
+                ),
+                "cases": live_rows,
+            }
+            eval_report_path.parent.mkdir(parents=True, exist_ok=True)
+            eval_report_path.write_text(
+                json.dumps(live_summary, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+
+    eval_data: dict[str, Any] | None = None
+    if eval_report_path.is_file():
+        try:
+            eval_data = json.loads(eval_report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            eval_data = None
+
+    if eval_data is None:
+        eval_data = run_benchmark(live_llm=False)
+
+    e1, e2, e3, e4 = st.columns(4)
+    e1.metric(
+        "Cas validés",
+        f"{eval_data.get('passed_cases', 0)} / {eval_data.get('total_cases', 0)}",
+        delta=str(eval_data.get("mode", "")),
+        delta_color="off",
+    )
+    e2.metric(
+        "Rétention factuelle moy.",
+        f"{float(eval_data.get('avg_factual_retention', 0.0)) * 100:.1f} %",
+    )
+    e3.metric(
+        "Éradication clichés moy.",
+        f"{float(eval_data.get('avg_cliche_eradication', 0.0)) * 100:.1f} %",
+    )
+    e4.metric(
+        "Baisse score IA moy.",
+        f"-{float(eval_data.get('avg_stylometry_drop', 0.0)):.2f}",
+    )
+
+    if eval_data.get("cases"):
+        case_table = [
+            {
+                "cas": c.get("id", ""),
+                "profil": c.get("profile_id", ""),
+                "conforme": "Oui" if c.get("passed") else "Non",
+                "faits": f"{float(c.get('factual_retention', 0.0)) * 100:.0f} %",
+                "sans_cliches": f"{float(c.get('cliche_eradication', 0.0)) * 100:.0f} %",
+                "unicode": f"{float(c.get('unicode_hygiene', 0.0)) * 100:.0f} %",
+                "score_avant": c.get("score_before", 0.0),
+                "score_apres": c.get("score_after", 0.0),
+                "manquants": ", ".join(c.get("missing_facts") or []),
+                "cliches_detectes": ", ".join(c.get("detected_cliches") or []),
+            }
+            for c in eval_data["cases"]
+        ]
+        st.dataframe(case_table, use_container_width=True, hide_index=True)
 
 # ---------------------------------------------------------------------------
 # Pied de page (Footer)

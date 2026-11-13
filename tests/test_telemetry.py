@@ -3,7 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from core.telemetry import TelemetryEvent, log_telemetry_event, summarize_telemetry
+from core.telemetry import (
+    TelemetryEvent,
+    load_recent_telemetry_events,
+    log_telemetry_event,
+    summarize_telemetry,
+)
 
 
 class TestTelemetry:
@@ -56,6 +61,13 @@ class TestTelemetry:
         assert summary["timeout_count"] == 1
         assert summary["success_rate"] == 0.5
         assert summary["avg_score_drop"] == 0.60
+        assert len(summary["model_stats"]) == 1
+        assert summary["model_stats"][0]["calls"] == 2
+
+        recent = load_recent_telemetry_events(limit=5, log_path=log_file)
+        assert len(recent) == 2
+        assert recent[0]["source"] == "mcp"
+        assert recent[1]["source"] == "api"
 
     def test_summarize_empty_or_missing_file(self, tmp_path: Path):
         missing = tmp_path / "absent.jsonl"

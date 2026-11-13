@@ -70,6 +70,28 @@ def _percentile(sorted_vals: list[float], pct: float) -> float:
     return round(sorted_vals[idx], 2)
 
 
+def load_recent_telemetry_events(
+    limit: int = 20, log_path: Path | None = None
+) -> list[dict[str, Any]]:
+    """Return the most recent telemetry records (newest first) up to limit."""
+    target = get_telemetry_log_path(log_path)
+    if not target.is_file() or limit <= 0:
+        return []
+    records: list[dict[str, Any]] = []
+    try:
+        for line in target.read_text(encoding="utf-8").splitlines():
+            raw = line.strip()
+            if not raw:
+                continue
+            try:
+                records.append(json.loads(raw))
+            except json.JSONDecodeError:
+                continue
+    except OSError:
+        return []
+    return list(reversed(records[-limit:]))
+
+
 def summarize_telemetry(log_path: Path | None = None) -> dict[str, Any]:
     """Aggregate harness operational metrics from the JSONL telemetry stream."""
     target = get_telemetry_log_path(log_path)
@@ -86,6 +108,7 @@ def summarize_telemetry(log_path: Path | None = None) -> dict[str, Any]:
             "avg_score_drop": 0.0,
             "by_model": {},
             "by_source": {},
+            "model_stats": [],
         }
 
     records: list[dict[str, Any]] = []
@@ -115,6 +138,7 @@ def summarize_telemetry(log_path: Path | None = None) -> dict[str, Any]:
             "avg_score_drop": 0.0,
             "by_model": {},
             "by_source": {},
+            "model_stats": [],
         }
 
     success_records = [r for r in records if r.get("success") is True]
@@ -138,11 +162,37 @@ def summarize_telemetry(log_path: Path | None = None) -> dict[str, Any]:
 
     by_model: dict[str, int] = {}
     by_source: dict[str, int] = {}
+    per_model_buckets: dict[str, list[dict[str, Any]]] = {}
     for rec in records:
         m = str(rec.get("model") or "unknown")
         s = str(rec.get("source") or "unknown")
         by_model[m] = by_model.get(m, 0) + 1
         by_source[s] = by_source.get(s, 0) + 1
+        per_model_buckets.setdefault(m, []).append(rec)
+
+    model_stats: list[dict[str, Any]] = []
+    for m_name, m_recs in sorted(
+        per_model_buckets.items(), key=lambda item: len(item[1]), reverse=True
+    ):
+        m_total = len(m_recs)
+        m_ok = [r for r in m_recs if r.get("success") is True]
+        m_lats = sorted(float(r.get("latency_ms", 0.0)) for r in m_recs)
+        m_drops = [
+            float(r.get("score_before", 0.0)) - float(r.get("score_after", 0.0))
+            for r in m_ok
+        ]
+        model_stats.append(
+            {
+                "model": m_name,
+                "calls": m_total,
+                "success_rate_pct": round((len(m_ok) / m_total) * 100.0, 1),
+                "p50_ms": _percentile(m_lats, 50),
+                "p95_ms": _percentile(m_lats, 95),
+                "avg_score_drop": round(sum(m_drops) / len(m_drops), 2)
+                if m_drops
+                else 0.0,
+            }
+        )
 
     return {
         "total_calls": total,
@@ -158,4 +208,5 @@ def summarize_telemetry(log_path: Path | None = None) -> dict[str, Any]:
         else 0.0,
         "by_model": by_model,
         "by_source": by_source,
+        "model_stats": model_stats,
     }
