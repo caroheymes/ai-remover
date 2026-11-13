@@ -70,6 +70,10 @@ Note importante sur l'arbre Git local: les fichiers `core/profiles.py`, `core/sc
 | `C:\Users\Admin\Documents\career-ops\career-ops\.claude\settings.json` | Pré-autorisation (`permissions.allow`) des 3 outils `mcp__ai-remover__*` sans invite de confirmation bloquante. |
 | `C:\Users\Admin\.claude.json` | Enregistrement global utilisateur dans Claude Code (`claude mcp list` affiche `Connected`). |
 | `C:\Users\Admin\Documents\career-ops\career-ops\modes\_custom.md` | Règle persistante imposant le passage par `humanize_text` et `analyze_ai_density` avant la génération PDF des lettres de motivation, dans le respect strict de `DATA_CONTRACT.md`. |
+| `C:\Users\Admin\Documents\career-ops\career-ops\generate-cover-letter.mjs` | Verrou déterministe avant rendu PDF: assainissement Unicode et typographique automatique (`sanitizeCoverLetterPayload`), rejet bloquant des tirets cadratins, émojis et clichés IA FR/EN (`validateCoverLetterHumanStyle`), et contrôle optionnel de score (`<= 0.35`) via `http://127.0.0.1:8506/api/v1/analyze`. |
+| `C:\Users\Admin\Documents\career-ops\career-ops\config\cv-facts.json` | Ajout de `forbidden_phrases` (couche utilisateur préservée lors des mises à jour `update-system.mjs`). |
+| `C:\Users\Admin\Documents\career-ops\career-ops\lint-french-style.mjs` | Correction des bornes de mots Unicode JavaScript (`(?<![\p{L}\p{N}_])`) pour détecter les clichés accentués comme "à la croisée de". |
+| `C:\Users\Admin\Documents\career-ops\career-ops\tests\cover-ai-remover-guard.test.mjs` | Suite de tests automatisée dans `career-ops` validant le verrou déterministe FR/EN (222 tests `cover` passants). |
 
 ## Commandes opérationnelles de reprise
 
