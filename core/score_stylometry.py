@@ -545,11 +545,12 @@ def generate_editorial_report(
     # Choix D : Choix spécifiques au profil métier
     profile_decisions = {
         "avocat": {
-            "title": "Profil Avocat et juriste d'affaires",
+            "title": "Profil Avocat et juriste d'affaires (LawyerScrib)",
             "points": [
-                "Qualification doctrinale et terminologique rigoureuse des notions juridiques.",
-                "Élimination des affirmations péremptoires gratuites au profit d'un raisonnement étayé.",
-                "Usage sobre et mesuré des modalisateurs sans empilement artificiel.",
+                "Style praticien incisif et engagé : voix active, qualification directe des faits et élimination de la fausse neutralité.",
+                "Éradication des 17 chevilles et patterns IA : suppression des formules creuses ('force est de constater', 'il convient de noter', 'revêt un caractère') et attributions vagues.",
+                "Raisonnement syllogistique tranché et recommandations opérationnelles sans hedging excessif.",
+                "Préservation absolue des textes de loi, numéros de pourvois et références jurisprudentielles.",
             ],
         },
         "analyste": {

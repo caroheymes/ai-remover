@@ -61,6 +61,8 @@ class TestProfiles:
         assert "BANNED WORDS" in prompt
         assert "directement" in prompt
         assert "synergie" in prompt
+        assert "correspond à mon parcours" in prompt
+        assert "à la croisée de" in prompt
         assert "Delivery technique" in prompt
         assert "Cadrage métier" in prompt
         assert "BigQuery avec vues matérialisées via dbt" in prompt
